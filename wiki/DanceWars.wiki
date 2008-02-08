@@ -1,0 +1,10 @@
+#summary All about Dance Wars
+
+= Introduction =
+
+Dance Wars is just the very beginning of a game Nate tried to write once. It might serve as an okay example of some working Python code.
+
+
+= Details =
+
+To run Dance Wars, just check it out, go to the dancewars folder, and run "python main.py" from the command line.
