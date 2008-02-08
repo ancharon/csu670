@@ -1,4 +1,6 @@
 #summary Links and resources for Python
 
+= Details =
+
 * Python pullDOM: http://docs.python.org/lib/module-xml.dom.pulldom.html
 * Python Library Reference: http://docs.python.org/lib/lib.html
