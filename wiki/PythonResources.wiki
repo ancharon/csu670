@@ -5,3 +5,4 @@
   * Python pullDOM: http://docs.python.org/lib/module-xml.dom.pulldom.html
   * Python Library Reference: http://docs.python.org/lib/lib.html
   * pullDOM example: http://mail.python.org/pipermail/xml-sig/2000-June/002571.html
+  * Python XML processing: http://www.idealliance.org/papers/dx_xml03/papers/06-02-03/06-02-03.html
