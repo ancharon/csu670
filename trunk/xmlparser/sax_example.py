@@ -37,7 +37,10 @@
 # </element>
 
 import string
+from xml.parsers import expat
 from xml import sax
+
+XML_TREE_ROOT = None
 
 class Castle(object):
     #Holds onto a representation of the castle, made up of rooms
@@ -93,11 +96,13 @@ class Room(object):
                 print exit
         return
 
-class Element:
-    #This class was written by John Bair and is freely available from the 
-    #ActiveState Programmers' Network (ASPN) at
-    # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/149368
-    
+        
+#Element and Xml2Obj were originally written by John Bair and are freely 
+#available on the ActiveState Programmers' Network (ASPN) at
+# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/149368
+#I've slightly modified them so that we'll (hopefully) be able to use Python's
+#IncrementalParser when we have to deal with input stream instead of a file
+class Element:    
     'A parsed XML element'
     def __init__(self,name,attributes):
         'Element constructor'
@@ -135,24 +140,11 @@ class Element:
                     elements.append(element)
             return elements
             
-    def toString(self, level=0):
-        retval = " " * level
-        retval += "<%s" % self.name
-        c = ""
-        for child in self.children:
-            c += child.toString(level+1)
-        if c == "":
-            retval += "/>\n"
-        else:
-            retval += ">\n" + c + ("</%s>\n" % self.name)
-        return retval
-
-class MessageHandler(sax.ContentHandler):
-    #A class that handles XML events and draws a tree from the document structure
-    
-    def __init__(self, nodeStack):
+class Xml2Obj(sax.ContentHandler):
+    'XML to Object'
+    def __init__(self):
         self.root = None
-        self.nodeStack = nodeStack
+        self.nodeStack = []
         
     def startElement(self,name,attributes):
         'SAX start element even handler'
@@ -170,54 +162,35 @@ class MessageHandler(sax.ContentHandler):
     def endElement(self,name):
         'SAX end element event handler'
         self.nodeStack = self.nodeStack[:-1]
-        
-    def characters(self, text):
-        if string.strip(text):
-            text = text.encode()
+
+    def characters(self,data):
+        'SAX character data event handler'
+        if string.strip(data):
+            data = data.encode()
             element = self.nodeStack[-1]
-            element.cdata += text
+            element.cdata += data
             return
 
-    # def startDocument(self):
-        # print "--- [Document]"
-        # self.depth = self.depth + 1
-        # return
+    def Parse(self,filename):
+        # Create a SAX parser
+        Parser = sax.make_parser()
+        handler = self
 
-    # def startElement(self, name, attributes):
-        # print self.increment*self.depth + "+-- [Element <" + name + ">]"            
-        # self.depth = self.depth + 1
-        # if name == "room":
-            # currentRoom = Room()
-        # elif currentRoom:
-            #We're parsing a room element
-            # self.setRoomElement(name)
-        # return
+        # Parse the XML File
+        ParserStatus = sax.parse(open(filename,'r'), handler)
+        
+        return self.root
 
-    # def endElement(self, name):
-        # self.depth = self.depth - 1
-        # if name == "room":
-            # castle.addRoom(currentRoom)
-            # currentRoom = None
-        # return
+def printElements(element, level):
+    print (" " * (level * 4)) + element.name + ": " + element.getData()
+    subnodes = element.getElements()
+    for subnode in subnodes:
+        printElements(subnode, level + 1)
+        
         
 #A little Python magic that allows this program to run as a stand-alone script
 if __name__ == '__main__':
-    #Create a new parser instance, using the Incremental Parser
-    #This will allow us to parse partial files using the feed() method
-    # For now, we're not making use of that.
-    parser = sax.make_parser()
-    #After parsing, nodestack will be a list of Elements
-    nodestack = []
-    #Create an instance of our handler class, which will be registered
-    #to receive SAX events
-    handler = MessageHandler(nodestack)
-    #Pass a file to be parsed, and pass the handler to be registered
-    #to receive SAX events.
-    f = open("test_message.xml")
-    sax.parse(f, handler)
-    #At this point, the parser has completed processing, and all events
-    #have been dispatched.  We're done.
-    f.close()
-    for node in nodestack:
-        print node.toString()
-        
+    parser = Xml2Obj()
+    element = parser.Parse('test_message.xml')
+
+    printElements(element, 0)
