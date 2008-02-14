@@ -147,19 +147,12 @@ class Xml2Obj(sax.ContentHandler):
     def __init__(self):
         self.root = None
         self.nodeStack = []
-        self.currentRoom = None
-        self.currentRoomElement = None
         
     def startElement(self,name,attributes):
         'SAX start element event handler'
         # Instantiate the appropriate Element object or a subclass of element
         if name == "room":
             element = Room(name.encode(), attributes)
-            self.currentRoom = element
-        elif self.currentRoom:
-            #We're taking in elements that need to be saved as properties of the current Room
-            self.currentRoomElement = name
-            element = Element(name.encode(),attributes)
         else:
             element = Element(name.encode(),attributes)
         
@@ -203,7 +196,7 @@ def printElements(element, level):
 def storeElements(element, level):
     #This method stores element data in the more Pythonic Room class
     #For now, it also prints out everything about the room for debugging purposes.
-    #Much of this method should be abstracted out.
+    #Much of this method should be abstracted out/put in a class or two.
     children = element.getElements()
     for child in children:
         if type(child) == Room:
@@ -224,7 +217,8 @@ def storeElements(element, level):
             for char in child.getCharacteristics():
                 print char
             print "It has the following exits: "
-            print child.getExits()
+            for exit in child.getExits():
+                print exit
             print
         storeElements(child, level + 1)
         
