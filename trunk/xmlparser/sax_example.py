@@ -140,6 +140,18 @@ class Room(Element):
             for exit in exits:
                 print exit
         return
+        
+class Gameover(Element):
+    
+    def __init__(self, name, attributes):
+        super(Gameover, self).__init__(name=name, attributes=attributes)
+        self.outcome = ""
+        
+    def setOutcome(self, outcome):
+        self.outcome = outcome
+        
+    def getOutcome(self):
+        return self.outcome
             
 class Xml2Obj(sax.ContentHandler):
     'XML to Object'
@@ -152,6 +164,8 @@ class Xml2Obj(sax.ContentHandler):
         # Instantiate the appropriate Element object or a subclass of element
         if name == "room":
             element = Room(name.encode(), attributes)
+        elif name == "gameover":
+            element = Gameover(name.encode(), attributes)
         else:
             element = Element(name.encode(),attributes)
         
@@ -219,12 +233,21 @@ def storeElements(element, level):
             for exit in child.getExits():
                 print exit
             print
+        elif type(child) == Gameover:
+            gameoverProperties = child.getElements()
+            for prop in gameoverProperties:
+                #There should be only one, outcome
+                if prop.name == "outcome":
+                    child.setOutcome(prop.cdata)
+            print "The game is over."
+            print "Outcome: " + child.getOutcome()
         storeElements(child, level + 1)
         
         
 #A little Python magic that allows this program to run as a stand-alone script
 if __name__ == '__main__':
     parser = Xml2Obj()
+    #The Parse method returns the root element of the XML tree
     element = parser.Parse('test_message.xml')
 
     printElements(element, 0)
