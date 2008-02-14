@@ -37,7 +37,6 @@
 # </element>
 
 import string
-from xml.parsers import expat
 from xml import sax
 
 class Castle(object):
