@@ -40,8 +40,6 @@ import string
 from xml.parsers import expat
 from xml import sax
 
-XML_TREE_ROOT = None
-
 class Castle(object):
     #Holds onto a representation of the castle, made up of rooms
     
@@ -54,47 +52,7 @@ class Castle(object):
     def addRoom(self, room):
         self.rooms.append(room)
 
-class Room(object):
-    
-    def __init__(self):
-        #Sets up empty values for the room object
-        self.purpose = ""
-        self.characteristics = []
-        self.exits = []
-        return
-        
-    def setPurpose(self, purpose):
-        self.purpose = purpose
-        return
-        
-    def getPurpose(self):
-        return self.purpose
-        
-    def addCharacteristic(self, characteristic):
-        self.characteristics.append(characteristic)
-        return
-        
-    def getCharacteristics(self):
-        return self.characteristics
-        
-    def addExit(self, exit):
-        self.exits.append(exit)
-        return
-        
-    def getExits(self):
-        return exits
-    
-    def toString(self):
-        print "The room is a " + self.purpose
-        if characteristics:
-            print "It has the following characteristics:"
-            for char in characteristics:
-                print char
-        if exits:
-            print "There are exits in the following directions:"
-            for exit in exits:
-                print exit
-        return
+
 
         
 #Element and Xml2Obj were originally written by John Bair and are freely 
@@ -102,7 +60,7 @@ class Room(object):
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/149368
 #I've slightly modified them so that we'll (hopefully) be able to use Python's
 #IncrementalParser when we have to deal with input stream instead of a file
-class Element:    
+class Element(object):    
     'A parsed XML element'
     def __init__(self,name,attributes):
         'Element constructor'
@@ -113,7 +71,7 @@ class Element:
         # The element's cdata
         self.cdata = ''
         # The element's child element list (sequence)
-        self.children = []
+        self.children = []            
         
     def AddChild(self,element):
         'Add a reference to a child element'
@@ -140,16 +98,70 @@ class Element:
                     elements.append(element)
             return elements
             
+class Room(Element):
+    
+    def __init__(self, name, attributes):
+        super(Room, self).__init__(name=name, attributes=attributes) 
+        #Sets up empty values for the room object
+        self.purpose = ""
+        self.characteristics = []
+        self.exits = []
+        
+        return
+        
+    def setPurpose(self, purpose):
+        self.purpose = purpose
+        return
+        
+    def getPurpose(self):
+        return self.purpose
+        
+    def addCharacteristic(self, characteristic):
+        self.characteristics.append(characteristic)
+        return
+        
+    def getCharacteristics(self):
+        return self.characteristics
+        
+    def addExit(self, exit):
+        self.exits.append(exit)
+        return
+        
+    def getExits(self):
+        return self.exits
+    
+    def toString(self):
+        print "This room is a " + self.purpose
+        if characteristics:
+            print "It has the following characteristics:"
+            for char in characteristics:
+                print char
+        if exits:
+            print "There are exits in the following directions:"
+            for exit in exits:
+                print exit
+        return
+            
 class Xml2Obj(sax.ContentHandler):
     'XML to Object'
     def __init__(self):
         self.root = None
         self.nodeStack = []
+        self.currentRoom = None
+        self.currentRoomElement = None
         
     def startElement(self,name,attributes):
-        'SAX start element even handler'
-        # Instantiate an Element object
-        element = Element(name.encode(),attributes)
+        'SAX start element event handler'
+        # Instantiate the appropriate Element object or a subclass of element
+        if name == "room":
+            element = Room(name.encode(), attributes)
+            self.currentRoom = element
+        elif self.currentRoom:
+            #We're taking in elements that need to be saved as properties of the current Room
+            self.currentRoomElement = name
+            element = Element(name.encode(),attributes)
+        else:
+            element = Element(name.encode(),attributes)
         
         # Push element onto the stack and make it a child of parent
         if len(self.nodeStack) > 0:
@@ -166,6 +178,7 @@ class Xml2Obj(sax.ContentHandler):
     def characters(self,data):
         'SAX character data event handler'
         if string.strip(data):
+            #This data is not just white space
             data = data.encode()
             element = self.nodeStack[-1]
             element.cdata += data
@@ -187,6 +200,34 @@ def printElements(element, level):
     for subnode in subnodes:
         printElements(subnode, level + 1)
         
+def storeElements(element, level):
+    #This method stores element data in the more Pythonic Room class
+    #For now, it also prints out everything about the room for debugging purposes.
+    #Much of this method should be abstracted out.
+    children = element.getElements()
+    for child in children:
+        if type(child) == Room:
+            #Get a list of room properties (the child's children)
+            roomProperties = child.getElements()
+            for prop in roomProperties:
+                #Assign the Room properties according to the element data
+                if prop.name == "purpose":
+                    child.setPurpose(prop.cdata)
+                elif prop.name == "characteristic":
+                    child.addCharacteristic(prop.cdata)
+                elif prop.name == "exits":
+                    exitList = prop.cdata.split(" ")
+                    for exit in exitList:
+                        child.addExit(exit)
+            print "This room is a " + child.getPurpose() + "."
+            print "It has the following characteristics: "
+            for char in child.getCharacteristics():
+                print char
+            print "It has the following exits: "
+            print child.getExits()
+            print
+        storeElements(child, level + 1)
+        
         
 #A little Python magic that allows this program to run as a stand-alone script
 if __name__ == '__main__':
@@ -194,3 +235,5 @@ if __name__ == '__main__':
     element = parser.Parse('test_message.xml')
 
     printElements(element, 0)
+    print "**************************"
+    storeElements(element, 0)
