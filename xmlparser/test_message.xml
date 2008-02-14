@@ -12,6 +12,7 @@
 	<room>
 		<purpose>hall</purpose>
 		<characteristic>large</characteristic>
+        <characteristic>dark</characteristic>
 		<exits></exits>
 	</room>
 	<gameover>
