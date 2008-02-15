@@ -1,0 +1,44 @@
+<messages>
+  <room>
+    <purpose>
+      freezer
+    </purpose>
+    <characteristic>
+      cold
+    </characteristic>
+    <exits>
+      north
+      up
+    </exits>
+  </room>
+  <room>
+    <purpose>
+      torture chamber
+    </purpose>
+    <characteristic>
+      bloody cold
+    </characteristic>
+    <exits>
+      east
+      west
+      north
+      up
+    </exits>
+  </room>
+  <room>
+    <purpose>
+      hall
+    </purpose>
+    <characteristic>
+      large
+    </characteristic>
+    <exits>
+      down south
+    </exits>
+  </room>
+  <gameover>
+    <outcome>
+      you lose
+    </outcome>
+  </gameover>
+</messages>

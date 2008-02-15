@@ -37,6 +37,7 @@
 # </element>
 
 import string
+import sys
 from xml import sax
 
 class Castle(object):
@@ -196,7 +197,8 @@ class Xml2Obj(sax.ContentHandler):
         handler = self
 
         # Parse the XML File
-        ParserStatus = sax.parse(open(filename,'r'), handler)
+        #ParserStatus = sax.parse(open(filename,'r'), handler)
+        ParserStatus = sax.parse(sys.stdin, handler)
         
         return self.root
 
@@ -218,11 +220,11 @@ def storeElements(element, level):
             for prop in roomProperties:
                 #Assign the Room properties according to the element data
                 if prop.name == "purpose":
-                    child.setPurpose(prop.cdata)
+                    child.setPurpose(prop.cdata.strip())
                 elif prop.name == "characteristic":
-                    child.addCharacteristic(prop.cdata)
+                    child.addCharacteristic(prop.cdata.strip())
                 elif prop.name == "exits":
-                    exitList = prop.cdata.split(" ")
+                    exitList = prop.cdata.split()
                     for exit in exitList:
                         child.addExit(exit)
             print "This room is a " + child.getPurpose() + "."
@@ -238,7 +240,7 @@ def storeElements(element, level):
             for prop in gameoverProperties:
                 #There should be only one, outcome
                 if prop.name == "outcome":
-                    child.setOutcome(prop.cdata)
+                    child.setOutcome(prop.cdata.strip())
             print "The game is over."
             print "Outcome: " + child.getOutcome()
         storeElements(child, level + 1)
