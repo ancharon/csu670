@@ -39,6 +39,8 @@
 import string
 import sys
 from xml import sax
+from lxml import etree
+from StringIO import StringIO
 
 class Castle(object):
     #Holds onto a representation of the castle, made up of rooms
@@ -110,21 +112,21 @@ class Room(Element):
         return
         
     def setPurpose(self, purpose):
-        self.purpose = purpose
+        self.purpose = unicode(purpose)
         return
         
     def getPurpose(self):
         return self.purpose
         
     def addCharacteristic(self, characteristic):
-        self.characteristics.append(characteristic)
+        self.characteristics.append(unicode(characteristic))
         return
         
     def getCharacteristics(self):
         return self.characteristics
         
     def addExit(self, exit):
-        self.exits.append(exit)
+        self.exits.append(unicode(exit))
         return
         
     def getExits(self):
@@ -149,7 +151,7 @@ class Gameover(Element):
         self.outcome = ""
         
     def setOutcome(self, outcome):
-        self.outcome = outcome
+        self.outcome = unicode(outcome)
         
     def getOutcome(self):
         return self.outcome
@@ -191,14 +193,33 @@ class Xml2Obj(sax.ContentHandler):
             element.cdata += data
             return
 
-    def Parse(self,filename):
+    def Parse(self,filename,specname):
         # Create a SAX parser
         Parser = sax.make_parser()
         handler = self
-
+        
+        #Open the spec file
+        spec = open(specname)
+        relaxng_doc = etree.parse(spec)
+        relaxng = etree.RelaxNG(relaxng_doc)
+        #f = open(filename)
+        incomingLines = ""
+        for line in sys.stdin.readlines():
+            incomingLines += line
+        
+        incomingLinesIO = StringIO(incomingLines)
+        
         # Parse the XML File
         #ParserStatus = sax.parse(open(filename,'r'), handler)
-        ParserStatus = sax.parse(sys.stdin, handler)
+        try:
+            doc = etree.parse(incomingLinesIO)
+            relaxng.validate(doc)
+            ParserStatus = sax.parse(incomingLinesIO, handler)
+        except etree.XMLSyntaxError, myerror:
+            sys.stdout.write(u"ERROR:")
+            sys.stdout.write(unicode(myerror))
+            sys.stdout.write("\n")
+            raise
         
         return self.root
 
@@ -227,11 +248,11 @@ def storeElements(element, level):
                     exitList = prop.cdata.split()
                     for exit in exitList:
                         child.addExit(exit)
-            print "This room is a " + child.getPurpose() + "."
-            print "It has the following characteristics: "
+            print u"This room is a " + child.getPurpose() + "."
+            print u"It has the following characteristics: "
             for char in child.getCharacteristics():
                 print char
-            print "It has the following exits: "
+            print u"It has the following exits: "
             for exit in child.getExits():
                 print exit
             print
@@ -241,8 +262,8 @@ def storeElements(element, level):
                 #There should be only one, outcome
                 if prop.name == "outcome":
                     child.setOutcome(prop.cdata.strip())
-            print "The game is over."
-            print "Outcome: " + child.getOutcome()
+            print u"The game is over."
+            print u"Outcome: " + child.getOutcome()
         storeElements(child, level + 1)
         
         
@@ -250,8 +271,8 @@ def storeElements(element, level):
 if __name__ == '__main__':
     parser = Xml2Obj()
     #The Parse method returns the root element of the XML tree
-    element = parser.Parse('test_message.xml')
-
-    printElements(element, 0)
-    print "**************************"
-    storeElements(element, 0)
+    try:
+        element = parser.Parse('rooms4.xml', 'spec.tld')
+        storeElements(element, 0)
+    except etree.XMLSyntaxError, myerror:
+        pass
