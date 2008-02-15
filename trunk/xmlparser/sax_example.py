@@ -205,6 +205,7 @@ class Xml2Obj(sax.ContentHandler):
             file = open(filename,'w')
             for line in sys.stdin.readlines():
                 file.write(line)
+            file.close()
                 
         #Use Jing to validate our Relax NG because we're too lazy to validate
         #it ourselves -- that's a lot of work.
@@ -215,7 +216,7 @@ class Xml2Obj(sax.ContentHandler):
             #Parse the XML File
             ParserStatus = sax.parse(open(filename,"r"), handler)
         else:
-            raise sax.SAXException("Given XML does not pass validation.")
+            raise sax.SAXException("ERROR: Given XML does not pass validation.")
         
         return self.root
 
