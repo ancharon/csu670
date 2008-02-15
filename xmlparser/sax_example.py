@@ -37,9 +37,9 @@
 # </element>
 
 import string
-import sys
+import sys,os
 from xml import sax
-from lxml import etree
+#from lxml import etree
 from StringIO import StringIO
 
 class Castle(object):
@@ -197,29 +197,25 @@ class Xml2Obj(sax.ContentHandler):
         # Create a SAX parser
         Parser = sax.make_parser()
         handler = self
-        
-        #Open the spec file
-        spec = open(specname)
-        relaxng_doc = etree.parse(spec)
-        relaxng = etree.RelaxNG(relaxng_doc)
-        #f = open(filename)
-        incomingLines = ""
-        for line in sys.stdin.readlines():
-            incomingLines += line
-        
-        incomingLinesIO = StringIO(incomingLines)
-        
-        # Parse the XML File
-        #ParserStatus = sax.parse(open(filename,'r'), handler)
-        try:
-            doc = etree.parse(incomingLinesIO)
-            relaxng.validate(doc)
-            ParserStatus = sax.parse(incomingLinesIO, handler)
-        except etree.XMLSyntaxError, myerror:
-            sys.stdout.write(u"ERROR:")
-            sys.stdout.write(unicode(myerror))
-            sys.stdout.write("\n")
-            raise
+   
+        #If the filename doesn't exist, we'll need to try reading from stdin
+        #to get some XML to validate.
+        if filename is None:
+            filename = "temp.xml"
+            file = open(filename,'w')
+            for line in sys.stdin.readlines():
+                file.write(line)
+                
+        #Use Jing to validate our Relax NG because we're too lazy to validate
+        #it ourselves -- that's a lot of work.
+        command = "java -jar jing.jar " + specname + " " + filename
+        result = os.system(command)
+
+        if result is 0:
+            #Parse the XML File
+            ParserStatus = sax.parse(open(filename,"r"), handler)
+        else:
+            raise sax.SAXException("Given XML does not pass validation.")
         
         return self.root
 
@@ -272,7 +268,8 @@ if __name__ == '__main__':
     parser = Xml2Obj()
     #The Parse method returns the root element of the XML tree
     try:
-        element = parser.Parse('rooms4.xml', 'spec.tld')
+        element = parser.Parse(None, 'relaxng.rng')
         storeElements(element, 0)
-    except etree.XMLSyntaxError, myerror:
+    except sax.SAXException,message:
+        print message
         pass
