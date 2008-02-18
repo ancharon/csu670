@@ -1,0 +1,12 @@
+Nathan Palmer
+Ethan Caldwell
+David Fier
+
+To use the XML parser, navigate to the folder containing parser.py and run it
+using the command "python parser.py". The file expects to receive input from
+stdin, and writes human-readable output to stdout.
+
+The parser uses jing for validation against the provided RELAX NG schema, so
+it is important that "jing.jar" be located in the same folder. In order to
+validate using jing, it creates a file called "temp.xml". The specification 
+is also expected to be in that folder and be named "relaxng.rng".
