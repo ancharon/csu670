@@ -1,49 +1,16 @@
 #!/usr/bin/env python
 
-#This script takes an XML file expected to be in the format specified by the
-# following RELAX NG specification:
-# <element name="messages" xmlns="http://relaxng.org/ns/structure/1.0">
-  # <zeroOrMore>
-    # <element name="room">
-      # <interleave>
-        # <element name="purpose">
-          # <text/>
-        # </element>
-        # <zeroOrMore>
-          # <element name="characteristic">
-            # <text/>
-          # </element>
-        # </zeroOrMore>
-        # <element name="exits">
-          # <zeroOrMore>
-            # <choice>
-              # <value>up</value>
-              # <value>down</value>
-              # <value>north</value>
-              # <value>south</value>
-              # <value>east</value>
-              # <value>west</value>
-            # </choice>
-          # </zeroOrMore>
-        # </element>
-      # </interleave>
-    # </element>
-  # </zeroOrMore>
-  # <element name="gameover">
-    # <element name="outcome">
-      # <text/>
-    # </element>
-  # </element>
-# </element>
+# This script takes an XML file from stdin expected to be in the format 
+# specified by the file 'relaxng.rng'. It prints a human-readable description
+# of the input to stdout.
 
 import string
 import sys,os
 from xml import sax
-#from lxml import etree
 from StringIO import StringIO
 
 class Castle(object):
-    #Holds onto a representation of the castle, made up of rooms
+    '''A representation of the castle, made up of rooms'''
     
     def __init__(self):
         self.rooms = []
@@ -53,8 +20,6 @@ class Castle(object):
         
     def addRoom(self, room):
         self.rooms.append(room)
-
-
 
         
 #Element and Xml2Obj were originally written by John Bair and are freely 
@@ -101,6 +66,7 @@ class Element(object):
             return elements
             
 class Room(Element):
+    '''A single room in a castle. Parsed from input.'''
     
     def __init__(self, name, attributes):
         super(Room, self).__init__(name=name, attributes=attributes) 
@@ -108,7 +74,6 @@ class Room(Element):
         self.purpose = ""
         self.characteristics = []
         self.exits = []
-        
         return
         
     def setPurpose(self, purpose):
@@ -145,6 +110,7 @@ class Room(Element):
         return
         
 class Gameover(Element):
+    '''A game over message. Parsed from input.'''
     
     def __init__(self, name, attributes):
         super(Gameover, self).__init__(name=name, attributes=attributes)
@@ -206,6 +172,10 @@ class Xml2Obj(sax.ContentHandler):
             for line in sys.stdin.readlines():
                 file.write(line)
             file.close()
+        elif not os.path.exists(filename):
+            errorMsg = u"Error: file '" + filename + "' not found\n"
+            sys.stderr.write(errorMsg)
+            sys.exit(1)
                 
         #Use Jing to validate our Relax NG because we're too lazy to validate
         #it ourselves -- that's a lot of work.
@@ -269,7 +239,11 @@ if __name__ == '__main__':
     parser = Xml2Obj()
     #The Parse method returns the root element of the XML tree
     try:
-        element = parser.Parse(None, 'relaxng.rng')
+        specname = 'relaxng.rng'
+        if len(sys.argv) > 1: #There is an argument
+            element = parser.Parse(sys.argv[1], specname)
+        else:
+            element = parser.Parse(None, specname)
         storeElements(element, 0)
     except sax.SAXException,message:
         print message
