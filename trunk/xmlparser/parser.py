@@ -7,8 +7,9 @@
 import string
 import sys,os
 from xml import sax
-from StringIO import StringIO
+import unittest
 
+#FIXME: Castle should be in its own module (with Room)
 class Castle(object):
     '''A representation of the castle, made up of rooms'''
     
@@ -64,7 +65,8 @@ class Element(object):
                 if element.name == name:
                     elements.append(element)
             return elements
-            
+
+#FIXME: Room should be in a separate module (with Castle)  
 class Room(Element):
     '''A single room in a castle. Parsed from input.'''
     
@@ -212,6 +214,7 @@ def storeElements(element, level):
                 elif prop.name == "characteristic":
                     child.addCharacteristic(prop.cdata.strip())
                 elif prop.name == "exits":
+                    #FIXME: Spec has changed, exits now has exit children.
                     exitList = prop.cdata.split()
                     for exit in exitList:
                         child.addExit(exit)
@@ -233,18 +236,28 @@ def storeElements(element, level):
             print u"Outcome: " + child.getOutcome()
         storeElements(child, level + 1)
         
+#FIXME: Need unit tests for classes   
+class Xml2ObjTests(unittest.TestCase):
+    def setUp(self):
+        pass
+        
+class RoomTests(unittest.TestCase):
+    def setUp(self):
+        pass
+
+class GameOverTests(unittest.TestCase):
+    def setUp(self):
+        pass
+        
+class ElementTests(unittest.TestCase):
+    def setUp(self):
+        pass
+        
+class CastleTests(unittest.TestCase):
+    def setUp(self):
+        pass
+           
         
 #A little Python magic that allows this program to run as a stand-alone script
 if __name__ == '__main__':
-    parser = Xml2Obj()
-    #The Parse method returns the root element of the XML tree
-    try:
-        specname = 'relaxng.rng'
-        if len(sys.argv) > 1: #There is an argument
-            element = parser.Parse(sys.argv[1], specname)
-        else:
-            element = parser.Parse(None, specname)
-        storeElements(element, 0)
-    except sax.SAXException,message:
-        print message
-        pass
+    unittest.main()
