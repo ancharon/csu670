@@ -98,18 +98,34 @@ class Room(Element):
         
     def getExits(self):
         return self.exits
+        
+    def objectify(self):
+        'Sets the Room-specific properties of this object'
+        roomProperties = self.getElements()
+        for prop in roomProperties:
+            #Assign the Room properties according to the element data
+            if prop.name == "purpose":
+                self.setPurpose(prop.cdata.strip())
+            elif prop.name == "characteristic":
+                self.addCharacteristic(prop.cdata.strip())
+            elif prop.name == "exits":
+                #FIXME: Spec has changed, exits now has exit children.
+                exitList = prop.getElements()
+                for exit in exitList:
+                    self.addExit(exit.cdata.strip())
     
     def toString(self):
-        print "This room is a " + self.purpose
-        if characteristics:
-            print "It has the following characteristics:"
-            for char in characteristics:
-                print char
-        if exits:
-            print "There are exits in the following directions:"
-            for exit in exits:
-                print exit
-        return
+        returnString = ""
+        returnString = u"This room is a " + self.getPurpose() + os.linesep
+        if self.getCharacteristics():
+            returnString += u"It has the following characteristics:" + os.linesep
+            for char in self.getCharacteristics():
+                returnString += char + os.linesep
+        if self.getExits():
+            returnString += u"There are exits in the following directions:" + os.linesep
+            for exit in self.getExits():
+                returnString += exit + os.linesep
+        return returnString
         
 class Gameover(Element):
     '''A game over message. Parsed from input.'''
@@ -123,6 +139,20 @@ class Gameover(Element):
         
     def getOutcome(self):
         return self.outcome
+        
+    def objectify(self):
+        'Sets the Gamover-specific properties of this object'
+        gameoverProperties = self.getElements()
+        for prop in gameoverProperties:
+            #There should be only one, outcome
+            if prop.name == "outcome":
+                self.setOutcome(prop.cdata.strip())
+        
+        
+    def toString(self):
+        returnString = u"The game is over." + os.linesep
+        returnString += u"Outcome: " + self.getOutcome() + os.linesep
+        return returnString
             
 class Xml2Obj(sax.ContentHandler):
     'XML to Object'
@@ -190,6 +220,9 @@ class Xml2Obj(sax.ContentHandler):
         else:
             raise sax.SAXException("ERROR: Given XML does not pass validation.")
         
+        #Set the type-specific properties of this element
+        self.root.objectify()
+        
         return self.root
 
 def printElements(element, level):
@@ -198,43 +231,31 @@ def printElements(element, level):
     for subnode in subnodes:
         printElements(subnode, level + 1)
         
-def storeElements(element, level):
-    #This method stores element data in the more Pythonic Room class
-    #For now, it also prints out everything about the room for debugging purposes.
-    #Much of this method should be abstracted out/put in a class or two.
-    children = element.getElements()
-    for child in children:
-        if type(child) == Room:
-            #Get a list of room properties (the child's children)
-            roomProperties = child.getElements()
-            for prop in roomProperties:
-                #Assign the Room properties according to the element data
-                if prop.name == "purpose":
-                    child.setPurpose(prop.cdata.strip())
-                elif prop.name == "characteristic":
-                    child.addCharacteristic(prop.cdata.strip())
-                elif prop.name == "exits":
-                    #FIXME: Spec has changed, exits now has exit children.
-                    exitList = prop.cdata.split()
-                    for exit in exitList:
-                        child.addExit(exit)
-            print u"This room is a " + child.getPurpose() + "."
-            print u"It has the following characteristics: "
-            for char in child.getCharacteristics():
-                print char
-            print u"It has the following exits: "
-            for exit in child.getExits():
-                print exit
-            print
-        elif type(child) == Gameover:
-            gameoverProperties = child.getElements()
-            for prop in gameoverProperties:
-                #There should be only one, outcome
-                if prop.name == "outcome":
-                    child.setOutcome(prop.cdata.strip())
-            print u"The game is over."
-            print u"Outcome: " + child.getOutcome()
-        storeElements(child, level + 1)
+def objectify(element):
+    #This method takes an Element and assigns properties to it depending on 
+    #what kind of Element it is.
+    #FIXME: Much of this method should be abstracted out/put in a class or two.
+    if type(element) == Room:
+        #Get a list of room properties (the element's children)
+        roomProperties = element.getElements()
+        for prop in roomProperties:
+            #Assign the Room properties according to the element data
+            if prop.name == "purpose":
+                element.setPurpose(prop.cdata.strip())
+            elif prop.name == "characteristic":
+                element.addCharacteristic(prop.cdata.strip())
+            elif prop.name == "exits":
+                #FIXME: Spec has changed, exits now has exit children.
+                exitList = prop.getElements()
+                for exit in exitList:
+                    element.addExit(exit.cdata.strip())
+    elif type(element) == Gameover:
+        gameoverProperties = element.getElements()
+        for prop in gameoverProperties:
+            #There should be only one, outcome
+            if prop.name == "outcome":
+                element.setOutcome(prop.cdata.strip())
+    return element
         
 #FIXME: Need unit tests for classes   
 class Xml2ObjTests(unittest.TestCase):
@@ -259,5 +280,5 @@ class CastleTests(unittest.TestCase):
            
         
 #A little Python magic that allows this program to run as a stand-alone script
-if __name__ == '__main__':
-    unittest.main()
+#if __name__ == '__main__':
+#    unittest.main()

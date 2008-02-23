@@ -1,0 +1,5 @@
+<gameover>
+  <outcome>
+    You lose after 1 moves because you made an illegal move.
+  </outcome>
+</gameover>
