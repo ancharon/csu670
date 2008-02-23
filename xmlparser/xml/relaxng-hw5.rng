@@ -1,0 +1,33 @@
+<choice xmlns="http://relaxng.org/ns/structure/1.0">
+  <element name="room">
+    <interleave>
+      <element name="purpose">
+        <text/>
+      </element>
+      <zeroOrMore>
+        <element name="characteristic">
+          <text/>
+        </element>
+      </zeroOrMore>
+      <element name="exits">
+        <oneOrMore>
+          <element name= "exit">
+            <choice>
+              <value>up</value>
+              <value>down</value>
+              <value>north</value>
+              <value>east</value>
+              <value>south</value>
+              <value>west</value>
+            </choice>
+          </element>
+        </oneOrMore>
+      </element>
+    </interleave>
+  </element>
+  <element name="gameover">
+    <element name="outcome">
+      <text/>
+    </element>
+  </element>
+</choice>
