@@ -22,7 +22,7 @@ if __name__ == '__main__':
     myParser = gameparser.Xml2Obj()
     #The Parse method returns the root element of the XML tree
     try:
-        specname = 'relaxng-hw5.rng'
+        specname = 'xml/relaxng-hw5.rng'
         if len(sys.argv) > 1: #There is an argument
             element = myParser.Parse(sys.argv[1], specname)
         else:
