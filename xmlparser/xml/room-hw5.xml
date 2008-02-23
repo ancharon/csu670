@@ -1,0 +1,31 @@
+<room>
+  <characteristic>
+    wainscoted
+  </characteristic>
+  <characteristic>
+    straw-floor
+  </characteristic>
+  <purpose>
+    bathroom
+  </purpose>
+  <exits>
+    <exit>
+      up
+    </exit>
+    <exit>
+      west
+    </exit>
+    <exit>
+      down
+    </exit>
+  </exits>
+  <characteristic>
+    built 8178
+  </characteristic>
+  <characteristic>
+    stone
+  </characteristic>
+  <characteristic>
+    whitewashed
+  </characteristic>
+</room>

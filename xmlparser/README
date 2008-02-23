@@ -6,10 +6,10 @@ To use the XML parser, navigate to the folder containing parser.py and run it
 using the command "python main.py". The file expects to receive input from
 stdin, and writes human-readable output to stdout. Because of this, it may be
 convenient to pipe a text file to the script using something like this:
-'cat rooms1.xml | python main.py'
+'cat xml/room-hw5.xml | python main.py'
 
 The parser now can also accept command line arguments for testing purposes.
-The command "python main.py rooms1.xml" will validate rooms1.xml against
+The command "python main.py xml/room-hw5.xml" will validate room-hw5.xml against
 relaxng.rng, parse its data, and print a human-readable form to stdout.
 
 The parser uses jing for validation against the provided RELAX NG schema, so
