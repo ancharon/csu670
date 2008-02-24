@@ -29,32 +29,33 @@ class Castle(object):
 #I've slightly modified them so that we'll (hopefully) be able to use Python's
 #IncrementalParser when we have to deal with input stream instead of a file
 class Element(object):    
-    'A parsed XML element'
+    '''A parsed XML element'''
     def __init__(self,name,attributes):
-        'Element constructor'
-        # The element's tag name
-        self.name = name
-        # The element's attribute dictionary
-        self.attributes = attributes
-        # The element's cdata
-        self.cdata = ''
-        # The element's child element list (sequence)
-        self.children = []            
+        if name != None:
+            'Element constructor'
+            # The element's tag name
+            self.name = name
+            # The element's attribute dictionary
+            self.attributes = attributes
+            # The element's cdata
+            self.cdata = ''
+            # The element's child element list (sequence)
+            self.children = []            
         
     def AddChild(self,element):
-        'Add a reference to a child element'
+        '''Add a reference to a child element'''
         self.children.append(element)
         
     def getAttribute(self,key):
-        'Get an attribute value'
+        '''Get an attribute value'''
         return self.attributes.get(key)
     
     def getData(self):
-        'Get the cdata'
+        '''Get the cdata'''
         return self.cdata
         
     def getElements(self,name=''):
-        'Get a list of child elements'
+        '''Get a list of child elements'''
         #If no tag name is specified, return the all children
         if not name:
             return self.children
@@ -70,12 +71,12 @@ class Element(object):
 class Room(Element):
     '''A single room in a castle. Parsed from input.'''
     
-    def __init__(self, name, attributes):
+    def __init__(self, name=None, attributes=None):
         super(Room, self).__init__(name=name, attributes=attributes) 
         #Sets up empty values for the room object
         self.purpose = ""
-        self.characteristics = []
-        self.exits = []
+        self.characteristics = set()
+        self.exits = set()
         return
         
     def setPurpose(self, purpose):
@@ -86,21 +87,34 @@ class Room(Element):
         return self.purpose
         
     def addCharacteristic(self, characteristic):
-        self.characteristics.append(unicode(characteristic))
+        self.characteristics.add(unicode(characteristic))
         return
         
     def getCharacteristics(self):
         return self.characteristics
         
     def addExit(self, exit):
-        self.exits.append(unicode(exit))
+        self.exits.add(unicode(exit))
         return
         
     def getExits(self):
         return self.exits
         
+    def isEqual(self, otherRoom):
+        if (otherRoom.purpose == self.purpose) and \
+           (self.characteristics == otherRoom.characteristics):
+            return True
+        else:
+            return False
+            
+    def isNull(self):
+        if self.purpose:
+            return False
+        else: 
+            return True
+        
     def objectify(self):
-        'Sets the Room-specific properties of this object'
+        '''Sets the Room-specific properties of this object'''
         roomProperties = self.getElements()
         for prop in roomProperties:
             #Assign the Room properties according to the element data
@@ -148,14 +162,13 @@ class Gameover(Element):
             if prop.name == "outcome":
                 self.setOutcome(prop.cdata.strip())
         
-        
     def toString(self):
         returnString = u"The game is over." + os.linesep
         returnString += u"Outcome: " + self.getOutcome() + os.linesep
         return returnString
             
 class Xml2Obj(sax.ContentHandler):
-    'XML to Object'
+    '''XML to Object'''
     def __init__(self):
         self.root = None
         self.nodeStack = []
@@ -179,11 +192,11 @@ class Xml2Obj(sax.ContentHandler):
         self.nodeStack.append(element)
         
     def endElement(self,name):
-        'SAX end element event handler'
+        '''SAX end element event handler'''
         self.nodeStack = self.nodeStack[:-1]
 
     def characters(self,data):
-        'SAX character data event handler'
+        '''SAX character data event handler'''
         if string.strip(data):
             #This data is not just white space
             data = data.encode()
@@ -231,54 +244,60 @@ def printElements(element, level):
     for subnode in subnodes:
         printElements(subnode, level + 1)
         
-def objectify(element):
-    #This method takes an Element and assigns properties to it depending on 
-    #what kind of Element it is.
-    #FIXME: Much of this method should be abstracted out/put in a class or two.
-    if type(element) == Room:
-        #Get a list of room properties (the element's children)
-        roomProperties = element.getElements()
-        for prop in roomProperties:
-            #Assign the Room properties according to the element data
-            if prop.name == "purpose":
-                element.setPurpose(prop.cdata.strip())
-            elif prop.name == "characteristic":
-                element.addCharacteristic(prop.cdata.strip())
-            elif prop.name == "exits":
-                #FIXME: Spec has changed, exits now has exit children.
-                exitList = prop.getElements()
-                for exit in exitList:
-                    element.addExit(exit.cdata.strip())
-    elif type(element) == Gameover:
-        gameoverProperties = element.getElements()
-        for prop in gameoverProperties:
-            #There should be only one, outcome
-            if prop.name == "outcome":
-                element.setOutcome(prop.cdata.strip())
-    return element
-        
 #FIXME: Need unit tests for classes   
-class Xml2ObjTests(unittest.TestCase):
-    def setUp(self):
-        pass
+# class Xml2ObjTests(unittest.TestCase):
+    # def setUp(self):
+        # pass
         
 class RoomTests(unittest.TestCase):
+    '''Tests for the Room class'''
+    
     def setUp(self):
-        pass
+        self.room1 = Room('dummy', {})
+        self.room1.setPurpose("dungeon")
+        self.room1.addCharacteristic("dark")
+        self.room1.addCharacteristic("dank")
+        self.room1.addCharacteristic("deep")
+        self.room1.addExit("north")
+        
+        self.room2 = Room('stuff', {})
+        self.room2.setPurpose("dungeon")
+        self.room2.addCharacteristic("deep")
+        self.room2.addCharacteristic("dank")
+        self.room2.addCharacteristic("dark")
+        self.room2.addExit("north")
+        
+    def testIsEqual(self):
+        result = self.room1.isEqual(self.room2)
+        self.assertEqual(result, True)
+        
+        #Test against room characteristics
+        self.room1.addCharacteristic("smelly")
+        result = self.room1.isEqual(self.room2)
+        self.assertEqual(result, False)
+        
+        self.room2.addCharacteristic("smelly")
+        result = self.room1.isEqual(self.room2)
+        self.assertEqual(result, True)
+        
+        #Test against room purpose
+        self.room2.setPurpose("fountain")
+        result = self.room1.isEqual(self.room2)
+        self.assertEqual(result, False)
 
-class GameOverTests(unittest.TestCase):
-    def setUp(self):
-        pass
+# class GameOverTests(unittest.TestCase):
+    # def setUp(self):
+        # pass
         
-class ElementTests(unittest.TestCase):
-    def setUp(self):
-        pass
+# class ElementTests(unittest.TestCase):
+    # def setUp(self):
+        # pass
         
-class CastleTests(unittest.TestCase):
-    def setUp(self):
-        pass
+# class CastleTests(unittest.TestCase):
+    # def setUp(self):
+        # pass
            
         
 #A little Python magic that allows this program to run as a stand-alone script
-#if __name__ == '__main__':
-#    unittest.main()
+if __name__ == '__main__':
+    unittest.main()
