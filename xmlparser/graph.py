@@ -11,7 +11,14 @@ class Room(object):
         #Sets up empty values for the room object
         self.purpose = ""
         self.characteristics = set()
+        #Exits are strings, which will be used later to create edges
         self.exits = set()
+        #The room will be told what edges it has. This is a performance
+        #optimization, it helps avoid having to search through all the edges
+        #in the graph.
+        self.edges = {}
+        #Set to True once we've visited this room in our graph traversal.
+        self.visited = False
         return
         
     def initialize(self, xmlElement):
@@ -41,9 +48,7 @@ class Room(object):
         
     def getCharacteristics(self):
         return self.characteristics
-    
-    #FIXME: exits should be Edges, not strings. Use the incoming string to
-    # create an Edge.    
+       
     def addExit(self, exit):
         self.exits.add(unicode(exit))
         return
@@ -51,7 +56,26 @@ class Room(object):
     def getExits(self):
         return self.exits
         
+    def addEdge(self, edge):
+        self.edges[edge.getDirection()] = edge
+        
+    def removeEdge(self, edge):
+        del self.edges[edge.getDirection()]
+        
+    def getEdges(self):
+        return self.edges
+        
+    def getEdge(self, direction):
+        return self.edges[direction]
+        
+    def isVisited(self):
+        return self.visited
+        
+    def visit(self):
+        self.visited = True
+        
     def isEqual(self, otherRoom):
+        '''Rooms are considered equal if they have the same purpose and characteristics'''
         if (otherRoom.purpose == self.purpose) and \
            (self.characteristics == otherRoom.characteristics):
             return True
@@ -59,6 +83,7 @@ class Room(object):
             return False
             
     def isNull(self):
+        '''We define a null room as one without a purpose. These cannot exist in the game.'''
         if self.purpose:
             return False
         else: 
@@ -104,34 +129,37 @@ class Gameover(object):
 
 class Edge(object):
     
-    def __init__(self, direction, (node1, node2)):
-        '''An edge means that to get from node1 to node2, you go direction'''
+    def __init__(self, direction, (room1, room2)):
+        '''An edge means that to get from room1 to room2, you go direction'''
         self.direction = direction
-        self.nodes = (node1, node2)
+        self.rooms = (room1, room2)
         
-    def getNodes(self):
-        return self.nodes
+    def getRooms(self):
+        return self.rooms
        
     def getDirection(self):
         return self.direction
         
-    def setNodes(self, (node1, node2)):
-        self.nodes = (node1, node2)
+    def setRooms(self, (room1, room2)):
+        self.rooms = (room1, room2)
         
     def setDirection(self):
         self.direction = direction
+        
+    def isEqual(self, edge):
+        #Two edges are equal if:
+        # 1. Their directions are the same
+        # 2. Edge1.room1 = Edge2.room1
+        # 3. Edge2.room2 = Edge2.room2
+        if self.direction == edge.direction:
+            myRooms = self.getRooms()
+            yourRooms = edge.getRooms()
+            if  myRooms[0].isEqual(yourRooms[0]) and \
+                myRooms[1].isEqual(yourRooms[1]):
+                return True
+        return False
 
-#FIXME: This class shouldn't exist, use Room instead.
-class Node(object):
-    
-    def __init__(self, room):
-        self.room = room  
 
-    def getExits(self):
-        return self.room.getExits()
-
-
-#FIXME: eliminate all mentions of Node, replace with Room
 class Graph(object):
 
     def __init__(self):
@@ -139,19 +167,41 @@ class Graph(object):
         self.edges = set()
         pass
         
-    def addEdges(self, room):
-        for exit in room.getExits():
-            self.addEdge(exit, (self, Room()))
-        return self.room.exits()
-        
-    def addEdge(self, direction, (node1, node2)):
+    def addEdge(self, direction, (room1, room2)):
         #FIXME: If there is already an edge going in this direction from node 1 to a non-null node,
         # then don't add anything. Otherwise, add this new edge.
-        self.edges.add(Edge(direction, (node1, node2)))
+        newEdge = Edge(direction, (room1, room2))
+        if room2 is not None:
+            #There is an edge here already. Check if it's equal to the new one.
+            oldEdge = room1.getEdge(direction)
+            if newEdge.isEqual(oldEdge):
+                #They're the same, do nothing.
+                return
+            else:
+                #They're not the same , get rid of the old one.
+                self.removeEdge(oldEdge)
+        #Add the edge to both the graph and the room
+        self.edges.add(newEdge)
+        room1.addEdge(newEdge)
+            
+    def removeEdge(self, edge):
+        room = edge.getRooms()[0]
+        self.edges.remove(edge)
+        room.removeEdge(edge())
         
+                    
     def addRoom(self, room):
         self.rooms.add(room)
-        self.addEdges(room)
+        #New rooms are populated with edges going to null. It is the
+        #responsibility of the GamePlayer class to update them later.
+        for exit in room.getExits():
+            self.addEdge(exit, (room, None))
+        #Mark the room as visited
+        room.visit()
+        
+    def isNewRoom(room):
+        '''Returns True if this room is not in the graph, False otherwise'''
+        return not room.isVisited()
         
 class RoomTests(unittest.TestCase):
     '''Tests for the Room class'''
