@@ -11,6 +11,7 @@ import sys
 import os
 import unittest
 
+import config
 from graph import *
 from gameparser import *
 
@@ -22,13 +23,14 @@ class GamePlayer(object):
         self.previousRoom = None
         self.lastMove = None
         
-    def move(self, direction):
-        '''Write a move to stdout and read a new element from stdin. Update the graph status to reflect the new state.'''
-        #When this method is done, we should be in a position to make an
-        # informed decision about where to go next.
+    def writeMove(self, direction):
+        '''Write a move to stdout.'''
         
-        #TODO: write move to stdout
-        #do the move and save it to self.lastMove.
+        #FIXME: should be much more robust
+        sys.stdout.write("<exit>" + direction + "</exit>")
+        
+    def updateState(self):
+        '''Read a new element from stdin using the XML parser and return it.'''
         element = self.getCurrentElement()
         
         if type(element) == Gameover:
@@ -39,33 +41,38 @@ class GamePlayer(object):
         elif type(element) == Room:
             self.previousRoom = self.currentRoom
             self.currentRoom = element
+            self.lastMove = direction
+        else:
+            raise TypeError, "Unhandled element type"
+                
+    def updateGraph(self):
+        '''Adds new Rooms and Edges to the graph'''
+        #When this method is done, we should be in a position to make an
+        # informed decision about where to go next.
         
         #If this is a new room, we need to add it to the graph, as well as its
-        # edges, all leading to null rooms.    
-        if self.isNewRoom(self.currentRoom):
+        # edges, all leading to null rooms since we don't know where they go.    
+        if self.graph.isNewRoom(self.currentRoom):
             self.graph.addRoom(self.currentRoom)
-            self.graph.addEdge(self.lastMove, (self.previousRoom, self.currentRoom))
-            #FIXME: in future assignments, an exit might not exist 
-            #in the opposite direction, so we should check for it before adding it.
-            #FIXME: We need a dictionary of opposite directions.
-            self.graph.addEdge(opposite[self.lastMove], (self.currentRoom, self.previousRoom))
-        #If this is not a new room, update the edges associated with our last
-        # move. This is held in self.lastMove.    
-        else:
-            self.graph.updateEdge(self.lastMove, (self.previousRoom, nullRoom), )
             
-        #Add edges leading to a null room for any remaining exits
-        self.graph.addEdges(self.currentRoom)
-        
-    def isNewRoom(room):
-        pass
+        #Always add the edges for the exit we just came from. The graph will
+        # just ignore it if you try to add something that already exists.
+        self.graph.addEdge(self.lastMove, (self.previousRoom, self.currentRoom))
+        self.graph.addEdge(config.oppositeDirs[self.lastMove], (self.currentRoom, self.previousRoom))
+                
         
     def getCurrentElement(self):
-        '''Returns either a Room or Gameover object, parsed and verified.'''
+        '''Returns either a Room or Gameover object, validated and parsed.'''
         myParser = gameparser.Xml2Obj()
-        #FIXME: specname should be declared in a config file
-        specname = os.path.join('xml', 'relaxng-hw5.rng')
-        return myParser.Parse(None, specname)
+        return myParser.Parse(None, config.PATH_TO_INPUT_SPEC)
+        
+    def takeTurn(self, direction):
+        '''Makes a move and updates the state to reflect the new situation.'''
+        #This method should be run in a loop along with something to tell it
+        # which direction to go each turn.
+        self.writeMove(direction)
+        self.updateState()
+        self.updateGraph()
 
 
 class GameplayerTests(unittest.TestCase):
