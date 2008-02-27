@@ -35,6 +35,8 @@ class Room(object):
                 for exit in exitList:
                     self.addExit(exit.cdata.strip())
         
+    #FIXME: This method should probably not exist. We don't want people changing
+    # this stuff after it's been parsed.
     def setPurpose(self, purpose):
         self.purpose = unicode(purpose)
         return
@@ -42,6 +44,8 @@ class Room(object):
     def getPurpose(self):
         return self.purpose
         
+    #FIXME: This method should probably not exist. We don't want people changing
+    # this stuff after it's been parsed.
     def addCharacteristic(self, characteristic):
         self.characteristics.add(unicode(characteristic))
         return
@@ -49,6 +53,8 @@ class Room(object):
     def getCharacteristics(self):
         return self.characteristics
        
+    #FIXME: This method should probably not exist. We don't want people changing
+    # this stuff after it's been parsed.
     def addExit(self, exit):
         self.exits.add(unicode(exit))
         return
@@ -81,13 +87,6 @@ class Room(object):
             return True
         else:
             return False
-            
-    def isNull(self):
-        '''We define a null room as one without a purpose. These cannot exist in the game.'''
-        if self.purpose:
-            return False
-        else: 
-            return True
     
     def toString(self):
         returnString = ""
@@ -108,6 +107,8 @@ class Gameover(object):
     def __init__(self):
         self.outcome = ""
 
+    #FIXME: This method should probably not exist. We don't want people changing
+    # this stuff after it's been parsed.
     def setOutcome(self, outcome):
         self.outcome = unicode(outcome)
 
