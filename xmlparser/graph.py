@@ -240,10 +240,13 @@ class RoomTests(unittest.TestCase):
         result = self.room1.isEqual(self.room2)
         self.assertEqual(result, False)
 
-# class GameOverTests(unittest.TestCase):
-    # def setUp(self):
-        # pass
-
+class GameOverTests(unittest.TestCase):
+    def createGameOver(self):
+		self.setOutcome(self, "Game Over")
+    
+	def testIsGameOver(self):
+		result = (self.outcome is not "")
+			
 #FIXME: Unit tests needed
 
 if __name__ == "__main__":
