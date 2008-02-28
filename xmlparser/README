@@ -2,17 +2,12 @@ Nathan Palmer
 Ethan Caldwell
 David Fier
 
-To use the XML parser, navigate to the folder containing parser.py and run it
-using the command "python main.py". The file expects to receive input from
-stdin, and writes human-readable output to stdout. Because of this, it may be
-convenient to pipe a text file to the script using something like this:
-'cat xml/room-hw5.xml | python main.py'
-
-The parser now can also accept command line arguments for testing purposes.
-The command "python main.py xml/room-hw5.xml" will validate room-hw5.xml against
-relaxng.rng, parse its data, and print a human-readable form to stdout.
-
-The parser uses jing for validation against the provided RELAX NG schema, so
-it is important that "jing.jar" be located in the same folder. In order to
-validate using jing, it creates a file called "temp.xml". The specification 
-is also expected to be in that folder and be named "relaxng.rng".
+How to build the escape program on a CCIS Solaris machine:
+1. Navigate to the xmlparser folder.
+2. Run the following commands: 
+    python freeze/freeze.py -o exec -X pydoc main.py
+    cd exec
+    make
+    cd ..
+3. You can now use "scsh -l game5.scm" to run the game with our escape program.
+    
