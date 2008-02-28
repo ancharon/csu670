@@ -47,7 +47,7 @@ class GamePlayer(object):
             
     def getCurrentElement(self):
         '''Returns either a Room or Gameover object, validated and parsed.'''
-        myParser = gameparser.Xml2Obj()
+        myParser = Xml2Obj()
         return myParser.Parse(None, config.PATH_TO_INPUT_SPEC)
                 
     def updateGraph(self):

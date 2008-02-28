@@ -11,7 +11,7 @@ import sys,os
 from xml import sax
 import unittest
 import gameparser
-import gameplayer
+from gameplayer import GamePlayer
 
 
 class main:
@@ -19,6 +19,6 @@ class main:
         pass
 
 if __name__ == '__main__':
-    gameplayer = Gameplayer()
-    gameplyaer.takeTurns()
+    myGameplayer = GamePlayer()
+    myGameplayer.takeTurns()
     
