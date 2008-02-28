@@ -59,6 +59,11 @@ class Room(object):
         self.exits.add(unicode(exit))
         return
         
+    def getAnExit(self):
+        #FIXME: horrible.
+        temp = self.exits.copy()
+        return temp.pop()
+        
     def getExits(self):
         return self.exits
         
