@@ -23,7 +23,7 @@ class GamePlayer(object):
         self.previousRoom = None
         self.lastMove = None
         
-    def writeMove(self, direction):
+    def writeMove(self, direction="north"):
         '''Write a move to stdout.'''
         
         #FIXME: should be much more robust
@@ -37,13 +37,18 @@ class GamePlayer(object):
             #Put the human-readable Gameover message to stderr so we know the outcome
             sys.stderr.write("The game is over." + os.linesep)
             sys.stderr.write(element.outcome)
-            sys.exit()
+            sys.exit(0)
         elif type(element) == Room:
             self.previousRoom = self.currentRoom
             self.currentRoom = element
             self.lastMove = direction
         else:
             raise TypeError, "Unhandled element type"
+            
+    def getCurrentElement(self):
+        '''Returns either a Room or Gameover object, validated and parsed.'''
+        myParser = gameparser.Xml2Obj()
+        return myParser.Parse(None, config.PATH_TO_INPUT_SPEC)
                 
     def updateGraph(self):
         '''Adds new Rooms and Edges to the graph'''
@@ -60,20 +65,18 @@ class GamePlayer(object):
         self.graph.addEdge(self.lastMove, (self.previousRoom, self.currentRoom))
         self.graph.addEdge(config.oppositeDirs[self.lastMove], (self.currentRoom, self.previousRoom))
                 
-        
-    def getCurrentElement(self):
-        '''Returns either a Room or Gameover object, validated and parsed.'''
-        myParser = gameparser.Xml2Obj()
-        return myParser.Parse(None, config.PATH_TO_INPUT_SPEC)
-        
-    def takeTurn(self, direction):
+    def getNextMove(self):
+        return self.currentRoom.getAnExit()
+ 
+    def takeTurns(self):
         '''Makes a move and updates the state to reflect the new situation.'''
         #This method should be run in a loop along with something to tell it
         # which direction to go each turn.
-        self.writeMove(direction)
-        self.updateState()
-        self.updateGraph()
-
+        while(True):
+            self.updateState()
+            self.updateGraph()
+            direction = self.getNextMove()
+            self.writeMove(direction)
 
 class GameplayerTests(unittest.TestCase):
     def setUp(self):

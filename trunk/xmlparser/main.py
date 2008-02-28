@@ -4,30 +4,21 @@
 main.py
 
 Created by Nathan Palmer on 2008-02-22.
-Copyright (c) 2008 Nathan Palmer. All rights reserved.
-LOL DAVE WUZ HERE
+Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, Dave Fier. All rights reserved.
 """
 
 import sys,os
 from xml import sax
 import unittest
 import gameparser
+import gameplayer
 
 
 class main:
     def __init__(self):
-        castle = gameparser.Castle()
+        pass
 
 if __name__ == '__main__':
+    gameplayer = Gameplayer()
+    gameplyaer.takeTurns()
     
-    myParser = gameparser.Xml2Obj()
-    #The Parse method returns the root element of the XML tree
-    try:
-        specname = os.path.join('xml', 'relaxng-hw5.rng')
-        if len(sys.argv) > 1: #There is an argument
-            element = myParser.Parse(sys.argv[1], specname)
-        else:
-            element = myParser.Parse(None, specname)
-        print element.toString()
-    except sax.SAXException,message:
-        print message
