@@ -247,16 +247,16 @@ class RoomTests(unittest.TestCase):
 
 class GameOverTests(unittest.TestCase):
     def createGameOver(self):
-		self.setOutcome(self, "Game Over")
-		
+        self.setOutcome(self, "Game Over")
+
     #Test if setOutcome has assigned an outcome.  Should only be the case on Game Over.  Result true if game is over.
-	def testIsGameOver(self):
-		result = (self.outcome is not "")
-		self.assertEqual(result, True)
-			
+    def testIsGameOver(self):
+        result = (self.outcome is not "")
+        self.assertEqual(result, True)
+            
 class EdgeTests(unittest.TestCase):
-	def setUp(self):
-	    self.room1 = Room()
+    def setUp(self):
+        self.room1 = Room()
         self.room1.setPurpose("bedroom")
         self.room1.addCharacteristic("creepy")
         self.room1.addCharacteristic("dim")
@@ -269,11 +269,10 @@ class EdgeTests(unittest.TestCase):
         self.room2.addCharacteristic("ornate")
         self.room2.addCharacteristic("festive")
         self.room2.addExit("south")
-		
-	#Test that edges exist
-		self.assertEqual(self.edges != set(), True)
-		
-	def testEdge(self):
+        
+        #Test that edges exist
+        self.assertEqual(self.edges != set(), True)
+        
 if __name__ == "__main__":
     unittest.main()
         
