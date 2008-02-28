@@ -10,4 +10,6 @@ How to build the escape program on a CCIS Solaris machine:
     make
     cd ..
 3. You can now use "scsh -l game5.scm" to run the game with our escape program.
+
+Note: The actual executable file is "exec/main"
     
