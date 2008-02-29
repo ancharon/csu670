@@ -9,15 +9,17 @@ class GamePlayerTests(unittest.TestCase):
     
     def setUp(self):
         self.player = GamePlayer()
-        self.infilePath = os.path.join("xml", "castleOneLoop.xml")
-        self.infile = open(self.infilePath, 'r')
-        sys.stdin = self.infile
+        infilepath = os.path.join("xml", "castleOneLoop.xml")
+        self.loopCastle = open(infilepath, 'r')
+        infile2path = os.path.join("xml", "castleDeadEnd.xml")
+        self.deadEndCastle = open(infile2path, 'r')
+        sys.stdin = self.loopCastle
         self.outfilePath = os.path.join("xml", "gameplayerTestOut.xml")
         self.outfile = open(self.outfilePath, 'w')
         sys.stdout = self.outfile
         
     def tearDown(self):
-        self.infile.close()
+        self.loopCastle.close()
         self.outfile.close()
         sys.stdin = sys.__stdin__
         sys.stdout = sys.__stdout__
@@ -50,7 +52,7 @@ class GamePlayerTests(unittest.TestCase):
         element2 = self.player.getCurrentElement()
         self.assertEqual(type(element2), Gameover)
         #Go back to the beginning of the file so we can use it again.
-        self.infile.seek(0)
+        self.loopCastle.seek(0)
         
     def testUpdateState(self):
         #This simulates the first room of the castle
@@ -71,7 +73,7 @@ class GamePlayerTests(unittest.TestCase):
         self.assertEqual(type(self.player.currentRoom), Room)
         self.assertEqual(self.player.lastMove, "north")
         #Now reset the infile
-        self.infile.seek(0)
+        self.loopCastle.seek(0)
         
     def testUpdateGraph(self):
         self.player.updateState(None)
@@ -108,19 +110,24 @@ class GamePlayerTests(unittest.TestCase):
         
         self.assert_(self.player.currentRoom == room1)
         
-    def testBfs(self):
+    def testBfsWithLoop(self):
         self.player.updateState(None)
         self.player.updateGraph()
         room1 = self.player.currentRoom
+        self.assertEqual(self.player.bfs(room1), room1)
         
         self.player.updateState("east")
         self.player.updateGraph()
         room2 = self.player.currentRoom
-        sys.stderr.write(unicode(self.bfs(room1)))
+        self.assertEqual(self.player.bfs(room1), room1)
+        self.assertEqual(self.player.bfs(room2), room2)
         
         self.player.updateState("north")
         self.player.updateGraph()
         room3 = self.player.currentRoom
+        self.assertEqual(self.player.bfs(room1), room1)
+        self.assertEqual(self.player.bfs(room2), room2)
+        self.assertEqual(self.player.bfs(room3), room3)
         
         self.player.updateState("west")
         self.player.updateGraph()
@@ -128,6 +135,33 @@ class GamePlayerTests(unittest.TestCase):
         
         self.player.updateState("south")
         self.player.updateGraph()
+        #room5 should be the same as room1
+        room5 = self.player.currentRoom
+        self.assertEqual(self.player.bfs(room5), room1)
+        
+        self.loopCastle.seek(0)
+        
+    def testBfsWithDeadEnd(self):
+        sys.stdin = self.deadEndCastle
+        self.player.updateState(None)
+        self.player.updateGraph()
+        room1 = self.player.currentRoom
+        self.assertEqual(self.player.bfs(room1), room1)
+        
+        self.player.updateState("west")
+        self.player.updateGraph()
+        room2 = self.player.currentRoom
+        self.assertEqual(self.player.bfs(room2), room2)
+        
+        #Move to a dead end room. BFS should figure out room1 is the only one
+        # that has any unexplored exits.
+        self.player.updateState("west")
+        self.player.updateGraph()
+        room3 = self.player.currentRoom
+        self.assertEqual(self.player.bfs(room3), room1)
+        
+        sys.stdin = self.loopCastle
+        
         
 
 if __name__ == '__main__':

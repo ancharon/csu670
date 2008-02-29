@@ -39,6 +39,30 @@
     <exit>
       east
     </exit>
+    <exit>
+      west
+    </exit>
+  </exits>
+  <characteristic>
+    stone
+  </characteristic>
+</room>
+
+
+<room>
+  <characteristic>
+    dark
+  </characteristic>
+  <characteristic>
+    bare-floor
+  </characteristic>
+  <purpose>
+    dungeon
+  </purpose>
+  <exits>
+    <exit>
+      east
+    </exit>
   </exits>
   <characteristic>
     stone
