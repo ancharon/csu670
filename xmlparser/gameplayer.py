@@ -82,7 +82,7 @@ class GamePlayer(object):
             self.graph.addEdge(config.oppositeDirs[self.lastMove], (self.currentRoom, self.previousRoom))
        
     def bfs(self, room):
-        '''Returns a room with an unexplored exit'''
+        '''Returns a room with an unexplored exit, starting the search from the given room'''
         distances = {}
         for thisRoom in self.graph.getRoomList():
             distances[thisRoom] = config.INFINITY
@@ -98,7 +98,8 @@ class GamePlayer(object):
                     Q.append(roomInQuestion)
                     distances[roomInQuestion] = distances[u] + 1
         #This should never happen; if it does, wander lost in the castle forever
-        logging.error("HALP WE R TRAPPED")
+        logging.error("Error during search: No unexplored exits found.")
+        raise self.SearchError, "No unexplored exits found in BFS"
         return room
     
     def getNextMove(self):
@@ -160,4 +161,10 @@ class GamePlayer(object):
             self.updateGraph()
             direction = self.getNextMove()
             self.writeMove(direction)
+
+    class SearchError(Exception):
+       def __init__(self,value):
+           self.parameter=value
+       def __str__(self):
+           return unicode(self.parameter)
 
