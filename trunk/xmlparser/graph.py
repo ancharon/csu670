@@ -4,6 +4,7 @@ import sys, os
 import unittest
 import logging
 import random
+import config
 
 #FIXME: Room and Gameover should be somewhere else (perhaps a gameelements module?)  
 class Room(object):
