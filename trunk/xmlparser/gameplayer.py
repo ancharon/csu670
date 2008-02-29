@@ -83,10 +83,9 @@ class GamePlayer(object):
        
     def bfs(self, room):
         '''Returns a room with an unexplored exit'''
-        infinity = float("infinity")
         distances = {}
         for thisRoom in self.graph.getRoomList():
-            distances[thisRoom] = infinity
+            distances[thisRoom] = config.INFINITY
         distances[room] = 0
         Q = [room]
         while Q is not []:
@@ -95,7 +94,7 @@ class GamePlayer(object):
                 roomInQuestion = edge.getRooms()[1]
                 if roomInQuestion is None: #Haven't been there.
                     return u
-                elif distances[roomInQuestion] == infinity:
+                elif distances[roomInQuestion] == config.INFINITY:
                     Q.append(roomInQuestion)
                     distances[roomInQuestion] = distances[u] + 1
         #This should never happen; if it does, wander lost in the castle forever
