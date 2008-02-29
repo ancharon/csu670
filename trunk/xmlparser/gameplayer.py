@@ -27,7 +27,7 @@ class GamePlayer(object):
         self.currentRoom = None
         self.previousRoom = None
         self.lastMove = None
-        self.exitStrategy = None
+        self.exitStrategy = []
         
     def writeMove(self, direction):
         '''Write a move to stdout.'''
@@ -93,17 +93,19 @@ class GamePlayer(object):
                     return u
                 elif distances[roomInQuestion] == infinity:
                     Q.append(roomInQuestion)
-                    dist[roomInQuestion] = dist[u] + 1
+                    distances[roomInQuestion] = distances[u] + 1
         #This should never happen; if it does, wander lost in the castle forever
         logging.error("HALP WE R TRAPPED")
         return room
     
     def getNextMove(self):
         if not self.exitStrategy:
-            # for edge in self.currentRoom.getEdges():
-                # logging.debug("Found an exit in this direction: " + edge.getDirection())
-                # if not edge.isExplored():
-                    # return edge.getDirection()
+            for edge in self.currentRoom.getEdges():
+                logging.debug("Found an exit in this direction: " + edge.getDirection())
+                if not edge.isExplored():
+                    logging.debug("Found a new exit in this direction: " + edge.getDirection())
+                    return edge.getDirection()
+                    
             #if we have run out of edges in this room we haven't seen before, we're going to ask the graph to give us a shortest path
             # tree that will contain all rooms reachable from this room. we can then look through those rooms to find a path we haven't seen.
             shortestTree = self.graph.findBestPath(self.currentRoom)
@@ -123,6 +125,10 @@ class GamePlayer(object):
                             return edge.getDirection()
                 while nextLookup is not self.currentRoom:
                     logging.debug("Inserting nextLookup into exitStrategy")
+                    logging.debug("nextLookup:")
+                    logging.debug(str(nextLookup))
+                    logging.debug(shortestTree)
+                    logging.debug(str(shortestTree))
                     self.exitStrategy.insert(0, shortestTree[nextLookup])
                     nextLookup = shortestTree[nextLookup]
                 

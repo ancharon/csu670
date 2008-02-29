@@ -242,30 +242,36 @@ class Graph(object):
         minRoom = None
         dist = float("infinity")
         for room in roomList:
-            if distancesDict[room] < dist:
+            if distancesDict[room] <= dist:
                 minRoom = room
                 dist = distancesDict[room]
         return roomList.index(minRoom)
         
     #This will return a shortest path to anywhere from roomFrom (in dictionary format), if it exists in the graph (ignores unexplored paths)
     def findBestPath(self, roomFrom):
-        logging.debug("Calculating minimum spanning tree")
         if roomFrom in self.rooms:
             dist = {}
             previous = {}
-            for v in self.rooms:
+            for v in self.getRoomList():
                 dist[v] = float("infinity")
                 previous[v] = None
             dist[roomFrom] = 0
             Q = self.getRoomList()
+            logging.debug("ROOM LIST:" + str(self.getRoomList()))
             while not Q == []:
                 u = Q.pop(self.getMinRoomIndex(Q, dist))
+                logging.debug("u: " + str(u))
                 for edge in u.getEdges():
                     if edge.getRooms()[1] is not None:
                         alt = dist[u] + edge.weight
                         if alt < dist[v]:
+                            logging.debug("In the part that should be doing the write")
                             dist[v] = alt
                             previous[v] = u
+            
+            logging.debug("Best path determined as:")
+            logging.debug(previous)
+            logging.debug("")
             return previous
         
         
