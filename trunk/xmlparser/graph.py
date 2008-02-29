@@ -187,6 +187,13 @@ class Edge(object):
                 myRooms[1].isEqual(yourRooms[1]):
                 return True
         return False
+        
+    def toString(self):
+        toReturn = ""
+        toReturn += "Edge from "
+        toReturn += unicode(self.rooms[0]) + " to " + unicode(self.rooms[1])
+        toReturn += " going " + self.direction
+        return toReturn
 
 
 class Graph(object):
@@ -230,7 +237,20 @@ class Graph(object):
         
     def isNewRoom(self, room):
         '''Returns True if this room is not in the graph, False otherwise'''
-        return not room.isVisited()
+        for thisRoom in self.rooms:
+            if thisRoom.isEqual(room):
+                return False
+        return True
+        
+    def getEquivalentRoom(self, room):
+        '''Looks through the room list to find a room equal to the given one and returns it. Returns None if there isn't one.'''
+        sys.stderr.write("Getting equivalent room for "+unicode(room)+os.linesep)
+        for thisRoom in self.rooms:
+            if thisRoom.isEqual(room):
+                sys.stderr.write("Equivalent room found: " + unicode(thisRoom)+os.linesep)
+                return thisRoom
+        return None
+            
         
     def getRoomList(self):
         roomList = []
@@ -312,12 +332,13 @@ class RoomTests(unittest.TestCase):
         self.assertEqual(result, False)
 
 class GameOverTests(unittest.TestCase):
-    def createGameOver(self):
-        self.setOutcome(self, "Game Over")
-
+    def setUp(self):
+        self.gameover = Gameover()
+        
     #Test if setOutcome has assigned an outcome.  Should only be the case on Game Over.  Result true if game is over.
     def testIsGameOver(self):
-        result = (self.outcome is not "")
+        self.gameover.setOutcome("Game Over")
+        result = (self.gameover.outcome is not "")
         self.assertEqual(result, True)
             
 class EdgeTests(unittest.TestCase):
