@@ -227,6 +227,9 @@ class Graph(object):
         
                     
     def addRoom(self, room):
+        for myRoom in self.rooms:
+            if myRoom.isEqual(room):
+                return
         self.rooms.add(room)
         #New rooms are populated with edges going to null. It is the
         #responsibility of the GamePlayer class to update them later.
@@ -293,73 +296,4 @@ class Graph(object):
             return previous
         
         
-class RoomTests(unittest.TestCase):
-    '''Tests for the Room class'''
 
-    def setUp(self):
-        self.room1 = Room()
-        self.room1.setPurpose("dungeon")
-        self.room1.addCharacteristic("dark")
-        self.room1.addCharacteristic("dank")
-        self.room1.addCharacteristic("deep")
-        self.room1.addExit("north")
-
-        self.room2 = Room()
-        self.room2.setPurpose("dungeon")
-        self.room2.addCharacteristic("deep")
-        self.room2.addCharacteristic("dank")
-        self.room2.addCharacteristic("dark")
-        self.room2.addExit("north")
-
-    def testIsEqual(self):
-        result = self.room1.isEqual(self.room2)
-        self.assertEqual(result, True)
-
-        #Test against room characteristics
-        self.room1.addCharacteristic("smelly")
-        result = self.room1.isEqual(self.room2)
-        self.assertEqual(result, False)
-
-        self.room2.addCharacteristic("smelly")
-        result = self.room1.isEqual(self.room2)
-        self.assertEqual(result, True)
-
-        #Test against room purpose
-        self.room2.setPurpose("fountain")
-        result = self.room1.isEqual(self.room2)
-        self.assertEqual(result, False)
-
-class GameOverTests(unittest.TestCase):
-    def setUp(self):
-        self.gameover = Gameover()
-        
-    #Test if setOutcome has assigned an outcome.  Should only be the case on Game Over.  Result true if game is over.
-    def testIsGameOver(self):
-        self.gameover.setOutcome("Game Over")
-        result = (self.gameover.outcome is not "")
-        self.assertEqual(result, True)
-            
-class EdgeTests(unittest.TestCase):
-    def setUp(self):
-        self.room1 = Room()
-        self.room1.setPurpose("bedroom")
-        self.room1.addCharacteristic("creepy")
-        self.room1.addCharacteristic("dim")
-        self.room1.addCharacteristic("arid")
-        self.room1.addExit("north")
-
-        self.room2 = Room()
-        self.room2.setPurpose("dining hall")
-        self.room2.addCharacteristic("large")
-        self.room2.addCharacteristic("ornate")
-        self.room2.addCharacteristic("festive")
-        self.room2.addExit("south")
-        
-        #Test that edges exist
-        self.assertEqual(self.edges != set(), True)
-        
-if __name__ == "__main__":
-    unittest.main()
-        
-    
-    
