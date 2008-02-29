@@ -1,0 +1,46 @@
+<room>
+  <characteristic>
+    whitewashed
+  </characteristic>
+  <characteristic>
+    rug brown
+  </characteristic>
+  <purpose>
+    kitchen
+  </purpose>
+  <exits>
+    <exit>
+      east
+    </exit>
+    <exit>
+      west
+    </exit>
+    <exit>
+      north
+    </exit>
+  </exits>
+  <characteristic>
+    stone
+  </characteristic>
+</room>
+
+
+<room>
+  <characteristic>
+    whitewashed
+  </characteristic>
+  <characteristic>
+    bare-floor
+  </characteristic>
+  <purpose>
+    wardrobe
+  </purpose>
+  <exits>
+    <exit>
+      east
+    </exit>
+  </exits>
+  <characteristic>
+    stone
+  </characteristic>
+</room>
