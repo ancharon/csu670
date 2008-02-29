@@ -49,7 +49,10 @@
 
   (define rng-range (mod (current-seconds) 9999999))
   (define rng-offset (mod (current-seconds) 1000000))
-
+  
+  ;;(define rng-range (mod 26 9999999))
+  ;;(define rng-offset (mod 26 1000000))
+  
   (define (the-usual-random-number-generator)
     (+ (random rng-range) rng-offset))
 
