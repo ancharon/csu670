@@ -9,6 +9,7 @@ import sys,os
 from xml import sax
 import unittest
 import graph
+import logging
 
 #FIXME: Castle should be in its own module (with Room)
 class Castle(object):
@@ -79,6 +80,7 @@ class Element(object):
 class Xml2Obj(sax.ContentHandler):
     '''XML to Object'''
     def __init__(self):
+        logging.basicConfig(level=logging.DEBUG)
         self.root = None
         self.nodeStack = []
         
@@ -86,11 +88,11 @@ class Xml2Obj(sax.ContentHandler):
         'SAX start element event handler'
         # Instantiate the appropriate Element object or a subclass of element
         if name == "room":
-            element = Element(name.encode(), attributes, graph.Room)
+            element = Element(name, attributes, graph.Room)
         elif name == "gameover":
-            element = Element(name.encode(), attributes, graph.Gameover)
+            element = Element(name, attributes, graph.Gameover)
         else:
-            element = Element(name.encode(),attributes, None)
+            element = Element(name,attributes, None)
         
         # Push element onto the stack and make it a child of parent
         if len(self.nodeStack) > 0:
@@ -108,7 +110,7 @@ class Xml2Obj(sax.ContentHandler):
         '''SAX character data event handler'''
         if string.strip(data):
             #This data is not just white space
-            data = data.encode()
+            data = data
             element = self.nodeStack[-1]
             element.cdata += data
             return
@@ -123,12 +125,16 @@ class Xml2Obj(sax.ContentHandler):
         if filename is None:
             filename = "temp.xml"
             file = open(filename,'w')
-            for line in sys.stdin.readlines():
+            while 1:
+                line = sys.stdin.readline()
                 file.write(line)
+                if (line.strip() == "</room>") or (line.strip() == "</gameover>"):
+                    break
+            logging.debug("Closing File " + filename)
             file.close()
         elif not os.path.exists(filename):
             errorMsg = u"Error: file '" + filename + "' not found\n"
-            sys.stderr.write(errorMsg)
+            logging.error(errorMsg)
             sys.exit(1)
                 
         #Use Jing to validate our Relax NG because we're too lazy to validate
@@ -140,6 +146,7 @@ class Xml2Obj(sax.ContentHandler):
             #Parse the XML File
             ParserStatus = sax.parse(open(filename,"r"), handler)
         else:
+            logging.error("ERROR: Given XML does not pass validation.")
             raise sax.SAXException("ERROR: Given XML does not pass validation.")
         
         #Set the type-specific properties of this element

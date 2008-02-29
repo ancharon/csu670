@@ -2,6 +2,8 @@
 
 import sys, os
 import unittest
+import logging
+import random
 
 #FIXME: Room and Gameover should be somewhere else (perhaps a gameelements module?)  
 class Room(object):
@@ -61,8 +63,11 @@ class Room(object):
         
     def getAnExit(self):
         #FIXME: horrible.
-        temp = self.exits.copy()
-        return temp.pop()
+        temp = []
+        for exit in self.exits:
+            temp.append(exit)
+        r = random.randint(0, len(temp)-1)            
+        return temp[r]
         
     def getExits(self):
         return self.exits
@@ -74,7 +79,10 @@ class Room(object):
         del self.edges[edge.getDirection()]
         
     def getEdges(self):
-        return self.edges
+        edgeList = []
+        for edge in self.edges:
+            edgeList.append(self.edges[edge])
+        return edgeList
         
     def getEdge(self, direction):
         return self.edges[direction]
@@ -85,8 +93,18 @@ class Room(object):
     def visit(self):
         self.visited = True
         
+    def hasUnexploredExits(self):
+        '''Returns true if it has at least one unexplored exit (see the Edge class for a definition
+           of unexplored exit)'''
+        for edge in self.getEdges():
+            if edge.isExplored():
+                return True
+        return False
+        
     def isEqual(self, otherRoom):
         '''Rooms are considered equal if they have the same purpose and characteristics'''
+        if self is None or otherRoom is None:
+            return False
         if (otherRoom.purpose == self.purpose) and \
            (self.characteristics == otherRoom.characteristics):
             return True
@@ -139,6 +157,7 @@ class Edge(object):
         '''An edge means that to get from room1 to room2, you go direction'''
         self.direction = direction
         self.rooms = (room1, room2)
+        self.weight = 1 #unweighted graph
         
     def getRooms(self):
         return self.rooms
@@ -151,7 +170,11 @@ class Edge(object):
         
     def setDirection(self):
         self.direction = direction
-        
+    
+    def isExplored(self):
+        #This looks retarded, but it works, honest. If rooms[1] is None, then we haven't been there (duh), and None = False in Python.
+        return self.rooms[1]
+    
     def isEqual(self, edge):
         #Two edges are equal if:
         # 1. Their directions are the same
@@ -169,9 +192,9 @@ class Edge(object):
 class Graph(object):
 
     def __init__(self):
+        logging.basicConfig(level=logging.DEBUG)
         self.rooms = set()
         self.edges = set()
-        pass
         
     def addEdge(self, direction, (room1, room2)):
         #FIXME: If there is already an edge going in this direction from node 1 to a non-null node,
@@ -193,7 +216,7 @@ class Graph(object):
     def removeEdge(self, edge):
         room = edge.getRooms()[0]
         self.edges.remove(edge)
-        room.removeEdge(edge())
+        room.removeEdge(edge)
         
                     
     def addRoom(self, room):
@@ -205,9 +228,46 @@ class Graph(object):
         #Mark the room as visited
         room.visit()
         
-    def isNewRoom(room):
+    def isNewRoom(self, room):
         '''Returns True if this room is not in the graph, False otherwise'''
         return not room.isVisited()
+        
+    def getRoomList(self):
+        roomList = []
+        for room in self.rooms:
+            roomList.append(room)
+        return roomList
+        
+    def getMinRoomIndex(self, roomList, distancesDict):
+        minRoom = None
+        dist = float("infinity")
+        for room in roomList:
+            if distancesDict[room] < dist:
+                minRoom = room
+                dist = distancesDict[room]
+        return roomList.index(minRoom)
+        
+    #This will return a shortest path to anywhere from roomFrom (in dictionary format), if it exists in the graph (ignores unexplored paths)
+    def findBestPath(self, roomFrom):
+        logging.debug("Calculating minimum spanning tree")
+        if roomFrom in self.rooms:
+            dist = {}
+            previous = {}
+            for v in self.rooms:
+                dist[v] = float("infinity")
+                previous[v] = None
+            dist[roomFrom] = 0
+            Q = self.getRoomList()
+            while not Q == []:
+                u = Q.pop(self.getMinRoomIndex(Q, dist))
+                for edge in u.getEdges():
+                    if edge.getRooms()[1] is not None:
+                        alt = dist[u] + edge.weight
+                        if alt < dist[v]:
+                            dist[v] = alt
+                            previous[v] = u
+            return previous
+        
         
 class RoomTests(unittest.TestCase):
     '''Tests for the Room class'''
