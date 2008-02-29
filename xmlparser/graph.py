@@ -261,7 +261,7 @@ class Graph(object):
         
     def getMinRoomIndex(self, roomList, distancesDict):
         minRoom = None
-        dist = float("infinity")
+        dist = config.INFINITY
         for room in roomList:
             if distancesDict[room] <= dist:
                 minRoom = room
@@ -274,7 +274,7 @@ class Graph(object):
             dist = {}
             previous = {}
             for v in self.getRoomList():
-                dist[v] = float("infinity")
+                dist[v] = config.INFINITY
                 previous[v] = None
             dist[roomFrom] = 0
             Q = self.getRoomList()

@@ -108,6 +108,27 @@ class GamePlayerTests(unittest.TestCase):
         
         self.assert_(self.player.currentRoom == room1)
         
+    def testBfs(self):
+        self.player.updateState(None)
+        self.player.updateGraph()
+        room1 = self.player.currentRoom
+        
+        self.player.updateState("east")
+        self.player.updateGraph()
+        room2 = self.player.currentRoom
+        sys.stderr.write(unicode(self.bfs(room1)))
+        
+        self.player.updateState("north")
+        self.player.updateGraph()
+        room3 = self.player.currentRoom
+        
+        self.player.updateState("west")
+        self.player.updateGraph()
+        room4 = self.player.currentRoom
+        
+        self.player.updateState("south")
+        self.player.updateGraph()
+        
 
 if __name__ == '__main__':
     unittest.main()
