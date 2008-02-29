@@ -166,7 +166,7 @@ class GamePlayerTests(unittest.TestCase):
     
     def setUp(self):
         self.player = GamePlayer()
-        self.infilePath = os.path.join("xml", "gameplayerTestIn.xml")
+        self.infilePath = os.path.join("xml", "castleOneLoop.xml")
         self.infile = open(self.infilePath, 'r')
         sys.stdin = self.infile
         self.outfilePath = os.path.join("xml", "gameplayerTestOut.xml")
@@ -252,6 +252,7 @@ class GamePlayerTests(unittest.TestCase):
         #There should be exactly two edges connecting room1 and room2
         self.assertEqual(counter, 2)
         
+        #Now we're just going to go around a loop.
         self.player.updateState("north")
         self.player.updateGraph()
         
@@ -263,8 +264,6 @@ class GamePlayerTests(unittest.TestCase):
         self.player.updateGraph()
         
         self.assert_(self.player.currentRoom == room1)
-        for edge in self.player.graph.edges:
-            sys.stderr.write(edge.toString() + os.linesep)
         
 
 if __name__ == '__main__':

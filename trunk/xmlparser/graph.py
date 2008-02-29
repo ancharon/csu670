@@ -244,10 +244,8 @@ class Graph(object):
         
     def getEquivalentRoom(self, room):
         '''Looks through the room list to find a room equal to the given one and returns it. Returns None if there isn't one.'''
-        sys.stderr.write("Getting equivalent room for "+unicode(room)+os.linesep)
         for thisRoom in self.rooms:
             if thisRoom.isEqual(room):
-                sys.stderr.write("Equivalent room found: " + unicode(thisRoom)+os.linesep)
                 return thisRoom
         return None
             

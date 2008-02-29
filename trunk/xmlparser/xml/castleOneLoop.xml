@@ -1,0 +1,160 @@
+<room>
+  <characteristic>
+    rug brown
+  </characteristic>
+  <purpose>
+    storeroom
+  </purpose>
+  <exits>
+    <exit>
+      south
+    </exit>
+    <exit>
+      east
+    </exit>
+    <exit>
+      west
+    </exit>
+    <exit>
+      north
+    </exit>
+  </exits>
+  <characteristic>
+    built 8095
+  </characteristic>
+  <characteristic>
+    whitewashed
+  </characteristic>
+  <characteristic>
+    stone
+  </characteristic>
+</room>
+
+
+<room>
+  <characteristic>
+    stone
+  </characteristic>
+  <characteristic>
+    wainscoted
+  </characteristic>
+  <characteristic>
+    whitewashed
+  </characteristic>
+  <characteristic>
+    painted blue
+  </characteristic>
+  <characteristic>
+    straw-floor
+  </characteristic>
+  <exits>
+	<exit>
+	  west
+	</exit>
+    <exit>
+      east
+    </exit>
+	<exit>
+	  north
+	</exit>
+  </exits>
+  <purpose>
+    bedchamber
+  </purpose>
+</room>
+
+
+<room>
+  <characteristic>
+    rug blue
+  </characteristic>
+  <purpose>
+    garderobe
+  </purpose>
+  <exits>
+    <exit>
+      south
+    </exit>
+    <exit>
+      west
+    </exit>
+  </exits>
+  <characteristic>
+    whitewashed
+  </characteristic>
+  <characteristic>
+    painted blue
+  </characteristic>
+  <characteristic>
+    wainscoted
+  </characteristic>
+</room>
+
+<room>
+  <characteristic>
+    fireplace east
+  </characteristic>
+  <characteristic>
+    straw-floor
+  </characteristic>
+  <purpose>
+    bathroom
+  </purpose>
+  <exits>
+    <exit>
+      north
+    </exit>
+    <exit>
+      east
+    </exit>
+    <exit>
+      west
+    </exit>
+    <exit>
+      south
+    </exit>
+  </exits>
+  <characteristic>
+    stone
+  </characteristic>
+</room>
+
+
+<room>
+  <characteristic>
+    rug brown
+  </characteristic>
+  <purpose>
+    storeroom
+  </purpose>
+  <exits>
+    <exit>
+      south
+    </exit>
+    <exit>
+      east
+    </exit>
+    <exit>
+      west
+    </exit>
+    <exit>
+      north
+    </exit>
+  </exits>
+  <characteristic>
+    built 8095
+  </characteristic>
+  <characteristic>
+    whitewashed
+  </characteristic>
+  <characteristic>
+    stone
+  </characteristic>
+</room>
+
+
+<gameover>
+  <outcome>
+    You lose after 12 moves because you made an illegal move.
+  </outcome>
+</gameover>
