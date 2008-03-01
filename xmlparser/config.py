@@ -4,8 +4,7 @@
 config.py
 This file is meant to hold global variables for use throughout the program.
 
-Created by Nathan Palmer on 2008-02-26.
-Copyright (c) 2008 Nathan Palmer. All rights reserved.
+Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, David Fier. All rights reserved.
 """
 
 import os

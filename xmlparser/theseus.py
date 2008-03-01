@@ -3,7 +3,6 @@
 """
 theseus.py
 
-Created by Nathan Palmer on 2008-02-22.
 Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, Dave Fier. All rights reserved.
 """
 
