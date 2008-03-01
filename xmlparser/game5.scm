@@ -5,7 +5,7 @@
 
 ; Change this to name your game-playing program.
 
-(define my-process '("exec/main"))
+(define my-process '("exec/theseus"))
 
 ; Example:
 ;

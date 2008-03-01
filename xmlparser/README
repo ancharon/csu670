@@ -2,14 +2,59 @@ Nathan Palmer
 Ethan Caldwell
 David Fier
 
-How to build the escape program on a CCIS Solaris machine:
+
+
+How to build Theseus on a CCIS Solaris machine:
 1. Navigate to the xmlparser folder.
-2. Run the following commands: 
-    python freeze/freeze.py -o exec -X pydoc main.py
-    cd exec
-    make
-    cd ..
+2. Run "python build.py"
 3. You can now use "scsh -l game5.scm" to run the game with our escape program.
 
-Note: The actual executable file is "exec/main"
+Files
+-----
+exec
+    - (nothing until you run the build)
+freeze
+    - Contains tools used to build a unix executable from a collection of Python
+    scripts and modules.
+xml
+    - Various input/output files used for testing purposes and specification.
+-build.py
+    The build script. Fills the "exec" folder with C files and an executable.
+-config.py
+    Holds global configuration settings for easy access. See Notes for details.
+-gameparser.py, jing.jar
+    Parser for the incoming XML data. Uses jing.jar for validation.
+-gameplayer.py
+    Plays the game.
+-graph.py
+    Data structures used by gameplayer.py.
+-main.py
+    Initializes the GamePlayer and gets it going.
+
+Test Scripts
+------------
+* To run these scripts, just run "python [scriptname]"
+-gameplayertests.py, graphtests.py
+    Test scripts for their respective classes
+-game5.scm, game5.sls
+    A game file that runs Theseus with a random castle, specified by game5.sls.
+
+
+Notes
+-----
+The actual executable file is called "theseus" and is in the "exec" folder.
+
+Jing is a large performance hit. You can turn it off in config.py if you are
+confident that you have only valid XML input. (more details in config.py)
+
+In config.py, INFINITY is set to 1e3000. This is indeed a large number, but it
+is not in fact equal to infinity. While there is an accepted idiom for infinity
+in the latest version of Python, it is not defined in the version running on
+CCIS Solaris machines. Therefore, we assume that a castle will not be bigger
+than 1e3000 rooms. If it is, Theseus' behavior is undefined.
+    subnote: The CCIS Solaris machines actually _do_ handle the Python concept
+    of infinity correctly. However, many other machines running the same
+    version of Python do not. In the interest of consistency in testing, we
+    opted to go with the lowest common denominator.
+
     

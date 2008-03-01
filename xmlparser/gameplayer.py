@@ -31,7 +31,7 @@ class GamePlayer(object):
         
     def writeMove(self, direction):
         '''Write a move to stdout.'''
-        #FIXME: should be much more robust
+        #sys.stderr.write("***************************Moving " + direction)
         logging.debug("Writing move:")
         logging.debug("<exit>" + direction + "</exit>")
         sys.stdout.write("<exit>" + direction + "</exit>" + os.linesep)
@@ -52,6 +52,9 @@ class GamePlayer(object):
             self.previousRoom = self.currentRoom
             self.currentRoom = element
             self.lastMove = direction
+            logging.debug("I am now in a " + self.currentRoom.getPurpose())
+            logging.debug("Its ID is: " + unicode(self.currentRoom))
+            logging.debug("I moved " + unicode(direction) + " to get here.")
         else:
             logging.error("TypeError, Unhandled element type")
             raise TypeError, "Unhandled element type"
@@ -79,28 +82,31 @@ class GamePlayer(object):
         # just ignore it if you try to add something that already exists.
         if self.lastMove is not None:
             self.graph.addEdge(self.lastMove, (self.previousRoom, self.currentRoom))
-            self.graph.addEdge(config.oppositeDirs[self.lastMove], (self.currentRoom, self.previousRoom))
+            self.graph.addEdge(config.OPPOSITE_DIRS[self.lastMove], (self.currentRoom, self.previousRoom))
        
     def bfs(self, room):
         '''Returns a room with an unexplored exit, starting the search from the given room'''
         distances = {}
+        previous = {}
         for thisRoom in self.graph.getRoomList():
             distances[thisRoom] = config.INFINITY
         distances[room] = 0
+        previous[room] = None
         Q = [room]
         while Q is not []:
-            u = Q.pop(0)
-            for edge in u.getEdges():
-                roomInQuestion = edge.getRooms()[1]
+            thisRoom = Q.pop(0)
+            for edge in thisRoom.getEdges():
+                roomInQuestion = edge.getDestination()
                 if roomInQuestion is None: #Haven't been there.
-                    return u
+                    return (thisRoom, previous)
                 elif distances[roomInQuestion] == config.INFINITY:
                     Q.append(roomInQuestion)
-                    distances[roomInQuestion] = distances[u] + 1
+                    distances[roomInQuestion] = distances[thisRoom] + 1
+                    previous[roomInQuestion] = thisRoom
         #This should never happen; if it does, wander lost in the castle forever
         logging.error("Error during search: No unexplored exits found.")
         raise self.SearchError, "No unexplored exits found in BFS"
-        return room
+        return (room, previous)
     
     def getNextMove(self):
         if not self.exitStrategy:
@@ -114,50 +120,54 @@ class GamePlayer(object):
             #going to ask the graph to give us a shortest path tree that will 
             #contain all rooms reachable from this room. we can then look 
             #through those rooms to find a path we haven't seen.
-            shortestTree = self.graph.findBestPath(self.currentRoom)
-            nextRoom = self.bfs(self.currentRoom)
-            if nextRoom not in shortestTree:
+            #previousTree = self.graph.findBestPath(self.currentRoom)
+            (nextRoom, previousTree) = self.bfs(self.currentRoom)
+            logging.debug("previousTree:")
+            logging.debug(unicode(previousTree))
+            for item in previousTree:
+                logging.debug(str(item))
+                if type(item) is Room:
+                    logging.debug(item.getPurpose())
+            if nextRoom not in previousTree:
                 #Well, crap. Go west, young man.
-                logging.error("HALP WE R TRAPPED AGAIN")
+                logging.error("The room returned from the search was not found in the tree path.")
+                raise self.SearchError, "The room returned from the search was not found in the tree path."
                 return "west"
             else:
-                logging.debug("Next room is in the shortestTree")
-                #We're in luck!
-                nextLookup = nextRoom
-                if nextLookup is self.currentRoom:
-                    for edge in self.currentRoom.getEdges():
-                        logging.debug("Found an exit in this direction: " + edge.getDirection())
-                        if not edge.isExplored():
-                            return edge.getDirection()
-                while nextLookup is not self.currentRoom:
-                    logging.debug("Inserting nextLookup into exitStrategy")
-                    logging.debug("nextLookup:")
-                    logging.debug(str(nextLookup))
-                    logging.debug(shortestTree)
-                    logging.debug(str(shortestTree))
-                    self.exitStrategy.insert(0, shortestTree[nextLookup])
-                    nextLookup = shortestTree[nextLookup]
+                logging.debug("Next room is in the previousTree")
+                #nextRoom starts off as the destination room, the one with 
+                # an unexplored exit returned by BFS. So we need to add it
+                #first, then look up all the steps after that to build our 
+                #exit strategy. Ugh.
+                self.exitStrategy.insert(0, nextRoom)
+                while previousTree[nextRoom] is not self.currentRoom:
+                    logging.debug("Inside the while loop")
+                    self.exitStrategy.insert(0, previousTree[nextRoom])
+                    nextRoom = previousTree[nextRoom]
                 
         # We have a plan. I love it when a plan comes together.
+        logging.debug(os.linesep + "Exit strategy:")
+        for item in self.exitStrategy:
+            logging.debug(unicode(item.getPurpose()))
         nextRoomToMoveTo = self.exitStrategy.pop(0)
-        for edge in nextRoomToMoveTo.getEdges():
-            if edge.getRooms()[1] is nextRoomToMoveTo:
+        logging.debug("nextRoomToMoveTo is: " + nextRoomToMoveTo.getPurpose())
+        for edge in self.currentRoom.getEdges():
+            logging.debug("edge destination is: " + edge.getDestination().getPurpose())
+            if edge.getDestination() is nextRoomToMoveTo:
                 return edge.getDirection()
         #OH NOES
         logging.error("Got through getNextMove without getting a direction.")
-        return "west"
-        
-        
-        #This is awesome. We should leave this alone.
-        #return self.currentRoom.getAnExit()
+        logging.error("HALP WE R TRAPPED")
+        return self.currentRoom.getAnExit()
  
     def takeTurns(self):
         '''Makes a move and updates the state to reflect the new situation.'''
         direction = None
-        #This method should be run in a loop along with something to tell it
-        # which direction to go each turn.
         while(True):
-            self.updateState(direction)
+            try:
+                self.updateState(direction)
+            except TypeError: #We got something other than a Room or Gameover
+                sys.exit(1)
             self.updateGraph()
             direction = self.getNextMove()
             self.writeMove(direction)

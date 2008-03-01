@@ -6,7 +6,6 @@ import logging
 import random
 import config
 
-#FIXME: Room and Gameover should be somewhere else (perhaps a gameelements module?)  
 class Room(object):
     '''A single room in a castle. Parsed from input.'''
     
@@ -63,7 +62,8 @@ class Room(object):
         return
         
     def getAnExit(self):
-        #FIXME: horrible.
+        #FIXME: horrible. This method is a last resort and really should never
+        # be called. Any time it is, we should be also logging an error.
         temp = []
         for exit in self.exits:
             temp.append(exit)
@@ -162,6 +162,12 @@ class Edge(object):
         
     def getRooms(self):
         return self.rooms
+        
+    def getOrigin(self):
+        return self.rooms[0]
+        
+    def getDestination(self):
+        return self.rooms[1]
        
     def getDirection(self):
         return self.direction
@@ -205,7 +211,7 @@ class Graph(object):
         self.edges = set()
         
     def addEdge(self, direction, (room1, room2)):
-        #FIXME: If there is already an edge going in this direction from node 1 to a non-null node,
+        #If there is already an edge going in this direction from node 1 to a non-null node,
         # then don't add anything. Otherwise, add this new edge.
         newEdge = Edge(direction, (room1, room2))
         if room2 is not None:
