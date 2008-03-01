@@ -114,20 +114,20 @@ class GamePlayerTests(unittest.TestCase):
         self.player.updateState(None)
         self.player.updateGraph()
         room1 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room1), room1)
+        self.assertEqual(self.player.bfs(room1)[0], room1)
         
         self.player.updateState("east")
         self.player.updateGraph()
         room2 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room1), room1)
-        self.assertEqual(self.player.bfs(room2), room2)
+        self.assertEqual(self.player.bfs(room1)[0], room1)
+        self.assertEqual(self.player.bfs(room2)[0], room2)
         
         self.player.updateState("north")
         self.player.updateGraph()
         room3 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room1), room1)
-        self.assertEqual(self.player.bfs(room2), room2)
-        self.assertEqual(self.player.bfs(room3), room3)
+        self.assertEqual(self.player.bfs(room1)[0], room1)
+        self.assertEqual(self.player.bfs(room2)[0], room2)
+        self.assertEqual(self.player.bfs(room3)[0], room3)
         
         self.player.updateState("west")
         self.player.updateGraph()
@@ -137,7 +137,7 @@ class GamePlayerTests(unittest.TestCase):
         self.player.updateGraph()
         #room5 should be the same as room1
         room5 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room5), room1)
+        self.assertEqual(self.player.bfs(room5)[0], room1)
         
         self.loopCastle.seek(0)
         
@@ -146,19 +146,19 @@ class GamePlayerTests(unittest.TestCase):
         self.player.updateState(None)
         self.player.updateGraph()
         room1 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room1), room1)
+        self.assertEqual(self.player.bfs(room1)[0], room1)
         
         self.player.updateState("west")
         self.player.updateGraph()
         room2 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room2), room2)
+        self.assertEqual(self.player.bfs(room2)[0], room2)
         
         #Move to a dead end room. BFS should figure out room1 is the only one
         # that has any unexplored exits.
         self.player.updateState("west")
         self.player.updateGraph()
         room3 = self.player.currentRoom
-        self.assertEqual(self.player.bfs(room3), room1)
+        self.assertEqual(self.player.bfs(room3)[0], room1)
         
         sys.stdin = self.loopCastle
         

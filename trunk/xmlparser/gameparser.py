@@ -8,22 +8,10 @@ import string
 import sys,os
 from xml import sax
 import unittest
-import graph
 import logging
 
-#FIXME: Castle should be in its own module (with Room)
-class Castle(object):
-    '''A representation of the castle, made up of rooms'''
-    
-    def __init__(self):
-        self.rooms = []
-        
-    def getRooms(self):
-        return self.rooms
-        
-    def addRoom(self, room):
-        self.rooms.append(room)
-
+import graph
+import config
         
 #Element and Xml2Obj were originally written by John Bair and are freely 
 #available on the ActiveState Programmers' Network (ASPN) at
@@ -139,10 +127,11 @@ class Xml2Obj(sax.ContentHandler):
                 
         #Use Jing to validate our Relax NG because we're too lazy to validate
         #it ourselves -- that's a lot of work.
-        command = "java -jar jing.jar " + specname + " " + filename
-        result = os.system(command)
-
-        if result is 0:
+        if config.VALIDATE:
+            command = "java -jar jing.jar " + specname + " " + filename
+            result = os.system(command)
+            
+        if not config.VALIDATE or result is 0:
             #Parse the XML File
             ParserStatus = sax.parse(open(filename,"r"), handler)
         else:
@@ -166,10 +155,6 @@ def printElements(element, level):
         # pass
         
 # class ElementTests(unittest.TestCase):
-    # def setUp(self):
-        # pass
-        
-# class CastleTests(unittest.TestCase):
     # def setUp(self):
         # pass
            
