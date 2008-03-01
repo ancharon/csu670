@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+# encoding: utf-8
+"""
+graphtests.py
+
+Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, David Fier. All rights reserved.
+"""
+
 
 import sys, os
 import unittest

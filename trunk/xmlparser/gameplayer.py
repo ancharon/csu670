@@ -3,8 +3,7 @@
 """
 gameplayer.py
 
-Created by Nathan Palmer on 2008-02-26.
-Copyright (c) 2008 Nathan Palmer, Ethan Caldwell. All rights reserved.
+Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, David Fier. All rights reserved.
 """
 
 import sys

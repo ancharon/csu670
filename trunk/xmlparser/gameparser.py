@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+# encoding: utf-8
+"""
+gameparser.py
+
+Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, David Fier. All rights reserved.
+"""
+
 
 # This script takes an XML file from stdin expected to be in the format 
 # specified by the file 'relaxng.rng'. It prints a human-readable description
