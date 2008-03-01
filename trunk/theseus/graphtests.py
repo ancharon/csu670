@@ -109,6 +109,7 @@ class GraphTests(unittest.TestCase):
     def testAddRooms(self):
         self.assertEqual(len(self.graph.rooms) == 0, True)
         
+        #Tests involving these rooms may not be valid if the infile in setUp is changed
         self.graph.addRoom(self.room1)
         self.assertEqual(self.graph.rooms is not None, True)
         self.graph.addRoom(self.room2)
@@ -122,14 +123,60 @@ class GraphTests(unittest.TestCase):
         
         #self.room1 == self.room5 for this file
         self.assert_(not self.graph.isNewRoom(self.room5))
+        self.roomx = self.graph.getEquivalentRoom(self.room5)
+        self.assert_(self.roomx == self.room1)
+        self.assert_(self.roomx.isEqual(self.room1))
+        self.assert_(self.roomx.isEqual(self.room5))
         self.graph.addRoom(self.room5)
-        self.assert_(not self.graph.isNewRoom(self.room5))
+        self.assert_(len(self.graph.rooms) == 3)
         
         self.assert_(self.graph.isNewRoom(self.room4))
         self.graph.addRoom(self.room4)
         self.assert_(not self.graph.isNewRoom(self.room4))
         
         self.assert_(len(self.graph.rooms) == 4)
+        
+    # def testFindBestPath(self):
+        # self.path = {}
+        
+        # self.graph.addRoom(self.room1)
+        # self.graph.addRoom(self.room2)
+        # self.graph.addRoom(self.room3)
+        # self.graph.addRoom(self.room4)
+        
+        # self.path = self.graph.findBestPath(self.room1)
+        # self.assert_(len(self.path) == 4)
+        # for dest in self.path.values():
+            # self.assert_(dest is not None)
+            
+    # def testGetMinRoomIndex(self):
+        # self.roomList = []
+        # self.distances = {}
+        
+        # #Tests involving these rooms may not be valid if the infile in setUp is changed
+        # self.graph.addRoom(self.room1)
+        # self.graph.addRoom(self.room2)
+        # self.graph.addRoom(self.room3)
+        # self.graph.addRoom(self.room4)
+        
+        # self.roomList = self.graph.getRoomList()
+        
+        # self.distances[self.roomList[0]] = 0
+        # self.distances[self.roomList[1]] = config.INFINITY
+        # self.distances[self.roomList[2]] = config.INFINITY
+        # self.distances[self.roomList[3]] = config.INFINITY
+        
+        # self.assert_(self.graph.getMinRoomIndex(self.roomList, self.distances) == 0)
+        
+        # self.distances[self.roomList[0]] = config.INFINITY
+        
+        # self.assert_(self.graph.getMinRoomIndex(self.roomList, self.distances) == 3)
+        
+        # self.distances[self.roomList[1]] = 1
+        
+        # sys.stderr.write(str(self.graph.getMinRoomIndex(self.roomList, self.distances)))
+        
+        # self.assert_(self.graph.getMinRoomIndex(self.roomList, self.distances) == 1)
         
 if __name__ == "__main__":
     unittest.main()
