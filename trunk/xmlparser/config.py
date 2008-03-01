@@ -29,5 +29,5 @@ PATH_TO_INPUT_SPEC = os.path.join('xml', 'relaxng-hw5.rng')
 #Validation is a huge performance hit. If you're confident that the program
 # will be getting XML that validates to the given specification, set this to 
 # False (with a capital F) for a big speed boost.
-#VALIDATE=True
-VALIDATE = False
+VALIDATE=True
+#VALIDATE = False
