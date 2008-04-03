@@ -26,7 +26,8 @@ import config
 #I've slightly modified them so that we'll (hopefully) be able to use Python's
 #IncrementalParser when we have to deal with input stream instead of a file
 class Element(object):    
-    '''A parsed XML element'''
+    '''A generic parsed XML element'''
+   
     def __init__(self,name,attributes,generateType):
         if name != None:
             'Element constructor'
@@ -111,6 +112,7 @@ class Xml2Obj(sax.ContentHandler):
             return
 
     def Parse(self,filename,specname):
+        'Parse the input from filename (which can also be a stream)'
         # Create a SAX parser
         Parser = sax.make_parser()
         handler = self
@@ -123,6 +125,8 @@ class Xml2Obj(sax.ContentHandler):
             while 1:
                 line = sys.stdin.readline()
                 file.write(line)
+                #We're done parsing if this line signals the end of a game
+                # object description.
                 if (line.strip() == "</room>") or (line.strip() == "</gameover>"):
                     break
             logging.debug("Closing File " + filename)
@@ -151,20 +155,11 @@ class Xml2Obj(sax.ContentHandler):
         return element
 
 def printElements(element, level):
+    'Output an element and all of its sub-elements'
     print (" " * (level * 4)) + element.name + ": " + element.getData()
     subnodes = element.getElements()
     for subnode in subnodes:
         printElements(subnode, level + 1)
-        
-#FIXME: Need unit tests for classes   
-# class Xml2ObjTests(unittest.TestCase):
-    # def setUp(self):
-        # pass
-        
-# class ElementTests(unittest.TestCase):
-    # def setUp(self):
-        # pass
-           
         
 #A little Python magic that allows this program to run as a stand-alone script
 if __name__ == '__main__':
