@@ -12,6 +12,33 @@ import logging
 import random
 import config
 
+#TODO: implement all these classes
+class Item(object):
+    '''An item in the castle. Meant to be subclassed.'''
+    pass
+    
+class Frog(Item):
+    pass
+    
+class Paper(Item):
+    pass
+    
+class Treasure(Item):
+    pass
+    
+class Shield(Item):
+    pass
+    
+class Weapon(Item):
+    pass
+    
+class Character(object):
+    '''A character in the castle. Parsed from input.'''
+    pass
+    
+class Outside(object):
+    pass
+
 class Room(object):
     '''A single room in a castle. Parsed from input.'''
     
