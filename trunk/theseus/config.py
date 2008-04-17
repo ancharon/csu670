@@ -24,7 +24,8 @@ OPPOSITE_DIRS = {"east" : "west",
 INFINITY = 1e3000
 
 #Path the specification for input XML.
-PATH_TO_INPUT_SPEC = os.path.join('xml', 'relaxng-hw5.rng')
+#PATH_TO_INPUT_SPEC = os.path.join('xml', 'relaxng-hw5.rng')
+PATH_TO_INPUT_SPEC = os.path.join('xml', 'relaxng-hw7.rng')
 
 #Validation is a huge performance hit. If you're confident that the program
 # will be getting XML that validates to the given specification, set this to 

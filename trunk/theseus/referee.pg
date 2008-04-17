@@ -1,0 +1,75 @@
+Copyright 2008 William D Clinger
+
+ParseGen grammar for referee program (input only).
+Used with refereeTokens.sch.
+
+The parser never sees whitespace or comments.
+
+*terminals
+
+lt
+gt
+slash
+eq
+doublequote
+word
+string
+int
+stop
+enter
+exit
+up
+down
+north
+east
+south
+west
+grasp
+frog
+paper
+treasure
+style
+shield
+weapon
+drop
+write
+assault
+
+*productions
+
+<message>   ::=  lt <message2>                                  #identity
+<message2>  ::=  stop <stop2>                                   #identity
+            ::=  enter <enter2>                                 #identity
+            ::=  exit gt <direction> lt slash exit gt           #makeExit
+            ::=  grasp gt <item> lt slash grasp gt              #makeGrasp
+            ::=  drop <drop2>                                   #identity
+            ::=  write gt <text> lt slash write gt              #makeWrite
+            ::=  assault <assault2>                             #identity
+<stop2>     ::=  gt lt slash stop gt                            #makeStop
+            ::=  slash gt                                       #makeStop
+<enter2>    ::=  gt lt slash enter gt                           #makeEnter
+            ::=  slash gt                                       #makeEnter
+<drop2>     ::=  gt lt slash drop gt                            #makeDrop
+            ::=  slash gt                                       #makeDrop
+<assault2>  ::=  gt lt slash assault gt                         #makeAssault
+            ::=  slash gt                                       #makeAssault
+<direction>  ::=  up                                            #makeUp
+             ::=  down                                          #makeDown
+             ::=  north                                         #makeNorth
+             ::=  east                                          #makeEast
+             ::=  south                                         #makeSouth
+             ::=  west                                          #makeWest
+<item>   ::=  lt <item2>                                        #identity
+<item2>  ::=  frog gt lt slash frog gt                          #makeFrog
+         ::=  paper gt <text> lt slash paper gt                 #makePaper
+         ::=  treasure <style> gt <int> lt slash treasure gt    #makeTreasure
+         ::=  shield <style> gt <int> lt slash shield gt        #makeShield
+         ::=  weapon <style> gt <int> lt slash weapon gt        #makeWeapon
+<style>   ::=  style eq <string>                                #makeStyle
+<string>  ::=  string                                           #makeString
+<text>    ::=                                                   #makeEmptyText
+          ::=  <word> <text>                                    #makeWordText
+<word>    ::=  word                                             #makeWord
+<int>     ::=  int                                              #makeInt
+
+*end

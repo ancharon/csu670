@@ -1,0 +1,84 @@
+<choice xmlns="http://relaxng.org/ns/structure/1.0"
+        datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <element name="outside">
+    <empty/>
+  </element>
+  <element name="room">
+    <interleave>
+      <element name="purpose">
+        <text/>
+      </element>
+      <zeroOrMore>
+        <element name="characteristic">
+          <text/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="character">
+          <element name="species">
+            <choice>
+              <value>prince</value>
+              <value>princess</value>
+              <value>soldier</value>
+              <value>minion</value>
+              <value>peon</value>
+              <value>dragon</value>
+            </choice>
+          </element>
+          <element name="description">
+            <text/>
+          </element>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="item">
+          <choice>
+            <element name="frog">
+              <empty/>
+            </element>
+            <element name="paper">
+              <text/>
+            </element>
+            <element name="treasure">
+              <attribute name="style">
+                <text/>
+              </attribute>
+              <data type="int"/>
+            </element>
+            <element name="shield">
+              <attribute name="style">
+                <text/>
+              </attribute>
+              <data type="int"/>
+            </element>
+            <element name="weapon">
+              <attribute name="style">
+                <text/>
+              </attribute>
+              <data type="int"/>
+            </element>
+          </choice>
+        </element>
+      </zeroOrMore>
+      <element name="exits">
+        <oneOrMore>
+          <element name= "exit">
+            <choice>
+              <value>up</value>
+              <value>down</value>
+              <value>north</value>
+              <value>east</value>
+              <value>south</value>
+              <value>west</value>
+            </choice>
+          </element>
+        </oneOrMore>
+      </element>
+    </interleave>
+  </element>
+  <element name="gameover">
+    <element name="outcome">
+      <text/>
+    </element>
+  </element>
+</choice>
