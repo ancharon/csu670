@@ -32,3 +32,8 @@ PATH_TO_INPUT_SPEC = os.path.join('xml', 'relaxng-hw7.rng')
 # False (with a capital F) for a big speed boost.
 VALIDATE=True
 #VALIDATE = False
+
+#A tuple of XML ending tags that signal the end of the input, taken from the
+# referee program's output
+ELEMENT_END_SYMBOLS = ('</room>','</outside>','</gameover>')
+
