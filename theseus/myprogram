@@ -1,0 +1,25 @@
+; This Scheme script reads a <room>...</room> element
+; and then responds with <exit> north </exit>,
+; even if there is no exit to the north.
+
+#!r6rs
+
+(import
+  (rnrs base)
+  (rnrs control)
+  (rnrs io ports)
+  (rnrs io simple)
+  (rnrs programs))
+
+(define (play-stupidly)
+  (do ((x (read) (read)))
+      ((or (eof-object? x)
+           (eq? x '<gameover>)))
+    (if (eq? x '</room>)
+        (begin (display "<exit> north </exit>")
+               (newline)
+               (flush-output-port (current-output-port))))))
+
+(play-stupidly)
+
+(exit 0)
