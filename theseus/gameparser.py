@@ -80,15 +80,29 @@ class Xml2Obj(sax.ContentHandler):
         self.root = None
         self.nodeStack = []
         
+    def makeElement(self, name, attributes):
+        #TODO: find a better place for the typeMappings dictionary
+        typeMappings = {"room":     graph.Room,
+                        "gameover": graph.Gameover,
+                        "outside":  graph.Outside,
+                        "frog":     graph.Frog,
+                        "paper":    graph.Paper,
+                        "treasure": graph.Treasure,
+                        "shield":   graph.Shield,
+                        "weapon":   graph.Weapon,
+                        "character":graph.Character
+                        }
+        if name in typeMappings:
+            element = Element(name, attributes, typeMappings[name])
+        else:
+            element = Element(name,attributes, None)
+        
+        return element
+        
     def startElement(self,name,attributes):
         'SAX start element event handler'
         # Instantiate the appropriate Element object or a subclass of element
-        if name == "room":
-            element = Element(name, attributes, graph.Room)
-        elif name == "gameover":
-            element = Element(name, attributes, graph.Gameover)
-        else:
-            element = Element(name,attributes, None)
+        element = self.makeElement(name, attributes)
         
         # Push element onto the stack and make it a child of parent
         if len(self.nodeStack) > 0:
@@ -127,7 +141,7 @@ class Xml2Obj(sax.ContentHandler):
                 file.write(line)
                 #We're done parsing if this line signals the end of a game
                 # object description.
-                if (line.strip() == "</room>") or (line.strip() == "</gameover>"):
+                if line.strip() in config.ELEMENT_END_SYMBOLS:
                     break
             logging.debug("Closing File " + filename)
             file.close()
@@ -156,11 +170,16 @@ class Xml2Obj(sax.ContentHandler):
 
 def printElements(element, level):
     'Output an element and all of its sub-elements'
-    print (" " * (level * 4)) + element.name + ": " + element.getData()
+    if element.name in ('treasure', 'shield','weapon'):
+        print (" " * (level * 4)) + element.name + " '" + element.getAttribute('style') + "': " + element.getData()
+    else:
+        print (" " * (level * 4)) + element.name + ": " + element.getData()
     subnodes = element.getElements()
     for subnode in subnodes:
         printElements(subnode, level + 1)
         
 #A little Python magic that allows this program to run as a stand-alone script
 if __name__ == '__main__':
-    unittest.main()
+    myParser = Xml2Obj()
+    element = myParser.Parse('xml/fullroom.xml', config.PATH_TO_INPUT_SPEC)
+    printElements(myParser.root, 1)

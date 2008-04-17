@@ -13,32 +13,65 @@ import random
 import config
 
 #TODO: implement all these classes
-#Each must have an initialize method.
+
+#Any characteristics common to all Items should be implemented in the Item
+# class. Not sure if this is necessary or useful.
 class Item(object):
     '''An item in the castle. Meant to be subclassed.'''
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
     
 class Frog(Item):
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
     
 class Paper(Item):
-    pass
-    
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
+
+#Treasure, Shield, and Weapon each have a "style" attribute. If you want to get the
+# value of the "style" attribute, it is accessed by using something like this:
+# theStyle = xmlElement.getAttribute('style')
 class Treasure(Item):
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
     
 class Shield(Item):
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
     
 class Weapon(Item):
     pass
     
 class Character(object):
     '''A character in the castle. Parsed from input.'''
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
     
 class Outside(object):
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
 
 class Room(object):
     '''A single room in a castle. Parsed from input.'''
