@@ -13,6 +13,7 @@ import random
 import config
 
 #TODO: implement all these classes
+#Each must have an initialize method.
 class Item(object):
     '''An item in the castle. Meant to be subclassed.'''
     pass
