@@ -125,8 +125,9 @@ class Room(object):
         '''Rooms are considered equal if they have the same purpose and characteristics'''
         if self is None or otherRoom is None:
             return False
-        if (otherRoom.purpose == self.purpose) and \
-           (self.characteristics == otherRoom.characteristics):
+        if (self.purpose  == otherRoom.purpose) and \
+           (self.characteristics == otherRoom.characteristics) and \
+           (self.exits == otherRoom.exits):
             return True
         else:
             return False
