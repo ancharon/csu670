@@ -23,6 +23,12 @@ class Item(object):
         
     def initialize(self, xmlElement):
         pass
+        
+    def toString(self):
+        pass
+        
+    def toXML(self):
+        pass
     
 class Frog(Item):
     def __init__(self):
@@ -30,12 +36,24 @@ class Frog(Item):
         
     def initialize(self, xmlElement):
         pass
+        
+    def toString(self):
+        pass
+        
+    def toXML(self):
+        pass
     
 class Paper(Item):
     def __init__(self):
         pass
         
     def initialize(self, xmlElement):
+        pass
+        
+    def toString(self):
+        pass
+        
+    def toXML(self):
         pass
 
 #Treasure, Shield, and Weapon each have a "style" attribute. If you want to get the
@@ -47,6 +65,12 @@ class Treasure(Item):
         
     def initialize(self, xmlElement):
         pass
+        
+    def toString(self):
+        pass
+        
+    def toXML(self):
+        pass
     
 class Shield(Item):
     def __init__(self):
@@ -54,9 +78,25 @@ class Shield(Item):
         
     def initialize(self, xmlElement):
         pass
+        
+    def toString(self):
+        pass
+        
+    def toXML(self):
+        pass
     
 class Weapon(Item):
-    pass
+    def __init__(self):
+        pass
+        
+    def initialize(self, xmlElement):
+        pass
+    
+    def toString(self):
+        pass
+        
+    def toXML(self):
+        pass
     
 class Character(object):
     '''A character in the castle. Parsed from input.'''
@@ -65,12 +105,18 @@ class Character(object):
         
     def initialize(self, xmlElement):
         pass
+        
+    def toString(self):
+        pass
     
 class Outside(object):
     def __init__(self):
         pass
         
     def initialize(self, xmlElement):
+        pass
+        
+    def toString(self):
         pass
 
 class Room(object):

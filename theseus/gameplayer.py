@@ -15,6 +15,34 @@ import config
 from graph import *
 from gameparser import *
 
+class OutputWriter(object):
+    '''Used by the GamePlayer to write commands to stdout'''
+    
+    def __init__(self):
+        self.output = sys.stdout
+        
+    def writeExit(self, dir):
+        self.output.write("<exit>"+dir+"</exit>")
+    
+    # writeGrasp: Item -> None
+    def writeGrasp(self, item):
+        '''Writes a grasp command to self.output'''
+        self.output.write("<grasp>"+item.toXML()+"</grasp>")
+        
+    def writeDrop(self):
+        '''Writes a drop command to self.output'''
+        self.output.write("<drop></drop>")
+    
+    # writeWrite assumes you are grasping paper
+    # writeWrite: string -> None
+    def writeWrite(self, text):
+        '''Writes a write command to self.output'''
+        self.output.write("<write>"+text+"</write>")
+        
+    def writeAssault(self):
+        '''Writes an assault command to self.output'''
+        self.output.write("<assault></assault>")
+
 class GamePlayer(object):
     
     def __init__(self):
@@ -27,13 +55,15 @@ class GamePlayer(object):
         self.previousRoom = None
         self.lastMove = None
         self.exitStrategy = []
+        self.writer = OutputWriter()
         
     def writeMove(self, direction):
         '''Write a move to stdout.'''
         #sys.stderr.write("***************************Moving " + direction)
         logging.debug("Writing move:")
         logging.debug("<exit>" + direction + "</exit>")
-        sys.stdout.write("<exit>" + direction + "</exit>" + os.linesep)
+        self.writer.writeExit(direction)
+        #sys.stdout.write("<exit>" + direction + "</exit>" + os.linesep)
         #WHOOOOSH -- it's rude not to flush
         sys.stdout.flush()
         #sys.seat.down()
@@ -107,6 +137,9 @@ class GamePlayer(object):
         raise self.SearchError, "No unexplored exits found in BFS"
         return (room, previous)
     
+    #TODO: This needs to be returning arguments necessary for the next move, 
+    # not just a direction. A move can be grasping or dropping an item, writing
+    # on a piece of paper, or assaulting.
     def getNextMove(self):
         if not self.exitStrategy:
             for edge in self.currentRoom.getEdges():
@@ -165,9 +198,13 @@ class GamePlayer(object):
         while(True):
             try:
                 self.updateState(direction)
-            except TypeError: #We got something other than a Room or Gameover
+            except TypeError: #We got something other than a Room, Outside, or Gameover
                 sys.exit(1)
             self.updateGraph()
+            #TODO: getNextMove should not return a direction, but some
+            # representation of a player action and its arguments. There
+            # should be some internal state to deal with this as well so that
+            # we know, for instance, what item we are grasping.
             direction = self.getNextMove()
             self.writeMove(direction)
 
