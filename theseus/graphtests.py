@@ -9,10 +9,16 @@ Copyright (c) 2008 Nathan Palmer, Ethan Caldwell, David Fier. All rights reserve
 
 import sys, os
 import unittest
+from gameparser import *
 from graph import *
 from gameplayer import *
 
 class ItemTests(unittest.TestCase):
+
+    def setUp(self):
+        parser = Xml2Obj()
+        element = parser.Parse('xml/fullroom', config.PATH_TO_INPUT_SPEC)
+        
     
     def testFrog(self):
         frog = Frog()

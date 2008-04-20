@@ -46,7 +46,7 @@ class Paper(Item):
         properties = xmlElement.getElements()
         for prop in properties:
             if prop == "text":
-                self.text = prop
+                self.text = prop.cdata.strip()
                 
     def write(self, text):
         #TODO: deal with sending the write message to the referee
@@ -67,8 +67,8 @@ class Treasure(Item):
         self.value = 0
         
     def initialize(self, xmlElement):
-        self.style = xmlElement.getAttribute("style")
-        self.value = int(xmlElement.getData())
+        self.style = xmlElement.getAttribute("style").strip()
+        self.value = int(xmlElement.getData().strip())
         
     def toString(self):
         return "Treasure: " + self.style + ",worth " + str(self.value)
@@ -82,8 +82,8 @@ class Shield(Item):
         self.defense = 0
         
     def initialize(self, xmlElement):
-        self.style = xmlElement.getAttribute("style")
-        self.defense = int(xmlElement.getData())
+        self.style = xmlElement.getAttribute("style").strip()
+        self.defense = int(xmlElement.getData().strip())
         
     def toString(self):
         return "Shield: " + self.style + ",defense +" + str(self.defense)
@@ -97,8 +97,8 @@ class Weapon(Item):
         self.offense = 0
         
     def initialize(self, xmlElement):
-        self.style = xmlElement.getAttribute("style")
-        self.offense = int(xmlElement.getData())
+        self.style = xmlElement.getAttribute("style").strip()
+        self.offense = int(xmlElement.getData().strip())
     
     def toString(self):
         return "Weapon: " + self.style + ",offense +" + str(self.offense)
@@ -116,9 +116,9 @@ class Character(object):
         properties = xmlElement.getElements()
         for prop in properties:
             if prop == "species":
-                self.species = prop
+                self.species = prop.cdata.strip()
             elif prop == "description":
-                self.description = prop
+                self.description = prop.cdata.strip()
         
     def toString(self):
         return "Character: " + self.species + ", " + self.description
@@ -151,6 +151,10 @@ class Room(object):
         self.edges = {}
         #Set to True once we've visited this room in our graph traversal.
         self.visited = False
+        #The last known set of items we saw in the room
+        self.items = set()
+        #The last known set of characters we saw in the room
+        self.characters = set()
         return
         
     def initialize(self, xmlElement):
