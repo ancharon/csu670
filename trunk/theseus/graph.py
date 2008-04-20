@@ -23,91 +23,105 @@ class Item(object):
         
     def initialize(self, xmlElement):
         pass
-        
-    def toString(self):
-        pass
-        
-    def toXML(self):
-        pass
     
 class Frog(Item):
     def __init__(self):
         pass
         
     def initialize(self, xmlElement):
+        '''The frog has no properties'''
         pass
         
     def toString(self):
-        pass
+        return "Frog"
         
     def toXML(self):
-        pass
+        return "<frog></frog>"
     
 class Paper(Item):
     def __init__(self):
-        pass
+        self.text = ""
         
     def initialize(self, xmlElement):
-        pass
+        properties = xmlElement.getElements()
+        for prop in properties:
+            if prop == "text":
+                self.text = prop
+                
+    def write(self, text):
+        #TODO: deal with sending the write message to the referee
+        self.text = text
         
     def toString(self):
-        pass
+        return "Paper: '" + self.text + "'"
         
     def toXML(self):
-        pass
+        return "<paper>"+self.text+"</paper>"
 
 #Treasure, Shield, and Weapon each have a "style" attribute. If you want to get the
 # value of the "style" attribute, it is accessed by using something like this:
 # theStyle = xmlElement.getAttribute('style')
 class Treasure(Item):
     def __init__(self):
-        pass
+        self.style = ""
+        self.value = 0
         
     def initialize(self, xmlElement):
-        pass
+        self.style = xmlElement.getAttribute("style")
+        self.value = int(xmlElement.getData())
         
     def toString(self):
-        pass
+        return "Treasure: " + self.style + ",worth " + str(self.value)
         
     def toXML(self):
-        pass
+        return '<treasure style="' + self.style + '">' + str(self.value) + '</treasure>'
     
 class Shield(Item):
     def __init__(self):
-        pass
+        self.style = ""
+        self.defense = 0
         
     def initialize(self, xmlElement):
-        pass
+        self.style = xmlElement.getAttribute("style")
+        self.defense = int(xmlElement.getData())
         
     def toString(self):
-        pass
+        return "Shield: " + self.style + ",defense +" + str(self.defense)
         
     def toXML(self):
-        pass
+        return '<shield style="'+self.style+'">'+str(self.defense)+'</shield>'
     
 class Weapon(Item):
     def __init__(self):
-        pass
+        self.style = ""
+        self.offense = 0
         
     def initialize(self, xmlElement):
-        pass
+        self.style = xmlElement.getAttribute("style")
+        self.offense = int(xmlElement.getData())
     
     def toString(self):
-        pass
+        return "Weapon: " + self.style + ",offense +" + str(self.offense)
         
     def toXML(self):
-        pass
+        return '<weapon style="'+self.style+'">'+str(self.offense)+'</weapon>'
     
 class Character(object):
     '''A character in the castle. Parsed from input.'''
     def __init__(self):
-        pass
+        self.species = ""
+        self.description = ""
         
     def initialize(self, xmlElement):
-        pass
+        properties = xmlElement.getElements()
+        for prop in properties:
+            if prop == "species":
+                self.species = prop
+            elif prop == "description":
+                self.description = prop
         
     def toString(self):
-        pass
+        return "Character: " + self.species + ", " + self.description
     
 class Outside(object):
     def __init__(self):

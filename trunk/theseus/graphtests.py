@@ -12,6 +12,40 @@ import unittest
 from graph import *
 from gameplayer import *
 
+class ItemTests(unittest.TestCase):
+    
+    def testFrog(self):
+        frog = Frog()
+        self.assertEqual(frog.toString(), "Frog")
+        self.assertEqual(frog.toXML(), "<frog></frog>")
+        
+    def testPaper(self):
+        paper = Paper()
+        self.assertEqual(paper.toString(), "Paper: ''")
+        self.assertEqual(paper.toXML(), "<paper></paper>")
+        paper.write("blah blah")
+        self.assertEqual(paper.toString(), "Paper: 'blah blah'")
+        self.assertEqual(paper.toXML(), "<paper>blah blah</paper>")
+        
+    def testTreasure(self):
+        treasure = Treasure()
+        self.assertEqual(treasure.toString(), "Treasure: ,worth 0")
+        self.assertEqual(treasure.toXML(), '<treasure style="">0</treasure>')
+        
+    def testShield(self):
+        shield = Shield()
+        self.assertEqual(shield.toString(), "Shield: ,defense +0")
+        self.assertEqual(shield.toXML(), '<shield style="">0</shield>')
+        
+    def testWeapon(self):
+        weapon = Weapon()
+        self.assertEqual(weapon.toString(), "Weapon: ,offense +0")
+        self.assertEqual(weapon.toXML(), '<weapon style="">0</weapon>')
+        
+    def testCharacter(self):
+        char = Character()
+        self.assertEqual(char.toString(), "Character: , ")
+
 class RoomTests(unittest.TestCase):
     '''Tests for the Room class'''
 
