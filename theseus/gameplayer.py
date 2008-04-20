@@ -16,11 +16,80 @@ from graph import *
 from gameparser import *
 
 class OutputWriter(object):
-    '''Used by the GamePlayer to write commands to stdout'''
+    '''Used by the GamePlayer to write commands to stdout '''
+    
+    #    <!-- Relax NG specification of output messages -->
+
+    # <choice xmlns="http://relaxng.org/ns/structure/1.0"
+            # datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+      # <element name="stop">
+        # <empty/>
+      # </element>
+      # <element name="enter">
+        # <empty/>
+      # </element>
+      # <element name="exit">
+        # <choice>
+          # <value>up</value>
+          # <value>down</value>
+          # <value>north</value>
+          # <value>east</value>
+          # <value>south</value>
+          # <value>west</value>
+        # </choice>
+      # </element>
+      # <element name="grasp">
+        # <choice>
+          # <element name="frog">
+            # <empty/>
+          # </element>
+          # <element name="paper">
+            # <text/>
+          # </element>
+          # <element name="treasure">
+            # <attribute name="style">
+              # <text/>
+            # </attribute>
+            # <data type="int"/>
+          # </element>
+          # <element name="shield">
+            # <attribute name="style">
+              # <text/>
+            # </attribute>
+            # <data type="int"/>
+          # </element>
+          # <element name="weapon">
+            # <attribute name="style">
+              # <text/>
+            # </attribute>
+            # <data type="int"/>
+          # </element>
+        # </choice>
+      # </element>
+      # <element name="drop">
+        # <empty/>
+      # </element>
+      # <element name="write">
+        # <text/>
+      # </element>
+      # <element name="assault">
+        # <empty/>
+      # </element>
+    # </choice>
+    
     
     def __init__(self):
         self.output = sys.stdout
         
+    def writeEnter(self):
+        '''Writes an enter command to self.output'''
+        self.output.write("<enter></enter>")
+        
+    def writeStop(self):
+        '''Writes a stop command to self.output'''
+        self.output.write("<stop></stop>")
+        
+    #writeExit: string -> None    
     def writeExit(self, dir):
         self.output.write("<exit>"+dir+"</exit>")
     
