@@ -64,13 +64,9 @@ class Frog(Item):
     
 class Paper(Item):
     def __init__(self, xmlElement):
-        properties = xmlElement.getElements()
-        for prop in properties:
-            if prop == "text":
-                self.text = prop.cdata.strip()
+        self.text = xmlElement.getData().strip()
           
     def write(self, text):
-        #TODO: deal with sending the write message to the referee
         self.text = text
         
     def toString(self):
@@ -509,46 +505,5 @@ class Graph(object):
         for room in self.rooms:
             roomList.append(room)
         return roomList
-        
-    def getMinRoomIndex(self, roomList, distancesDict):
-        '''DEPRECATED Returns the index in roomList of the Room with the minimum distance'''
-        #FIXME: This has been deprecated and should probably be removed.
-        #FIXME: There's a bug in here somewhere. It doesn't work right.
-        minRoom = None
-        dist = config.INFINITY
-        for room in roomList:
-            if distancesDict[room] <= dist:
-                minRoom = room
-                dist = distancesDict[room]
-        return roomList.index(minRoom)
-        
-    def findBestPath(self, roomFrom):
-        '''DEPRECATED Returns a collection of Rooms in a "best path" from roomFrom to the nearest null Room'''
-        #FIXME: This doesn't actually work, and has been deprecated. It should probably be removed.
-        #This will return a shortest path to anywhere from roomFrom (in dictionary format), if it exists in the graph (ignores unexplored paths)
-        if roomFrom in self.rooms:
-            dist = {}
-            previous = {}
-            for v in self.getRoomList():
-                dist[v] = config.INFINITY
-                previous[v] = None
-            dist[roomFrom] = 0
-            Q = self.getRoomList()
-            logging.debug("ROOM LIST:" + str(self.getRoomList()))
-            while not Q == []:
-                u = Q.pop(self.getMinRoomIndex(Q, dist))
-                logging.debug("u: " + str(u))
-                for edge in u.getEdges():
-                    if edge.getRooms()[1] is not None:
-                        alt = dist[u] + edge.weight
-                        if alt < dist[v]:
-                            logging.debug("In the part that should be doing the write")
-                            dist[v] = alt
-                            previous[v] = u
-            
-            logging.debug("Best path determined as:")
-            logging.debug(previous)
-            logging.debug("")
-            return previous
             
 

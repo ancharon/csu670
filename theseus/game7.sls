@@ -128,6 +128,7 @@
                    (not (char=? c #\>))
                    (not (char=? c #\=))
                    (not (char=? c #\/))
+                   (not (char=? c #\"))
                    (not (char=? c #\tab))
                    (not (char=? c #\newline))
                    (not (char=? c #\vtab))
@@ -159,6 +160,7 @@
                    (not (char=? c #\>))
                    (not (char=? c #\=))
                    (not (char=? c #\/))
+                   (not (char=? c #\"))
                    (not (char=? c #\tab))
                    (not (char=? c #\newline))
                    (not (char=? c #\vtab))
@@ -563,29 +565,39 @@
     ((frog)
      (begin
        (consume-token!)
-       (if (eq? (next-token) 'gt)
-           (begin
-             (consume-token!)
-             (if (eq? (next-token) 'lt)
-                 (begin
-                   (consume-token!)
-                   (if (eq? (next-token) 'slash)
-                       (begin
-                         (consume-token!)
-                         (if (eq? (next-token) 'frog)
-                             (begin
-                               (consume-token!)
-                               (if (eq? (next-token) 'gt)
-                                   (begin (consume-token!) (makeFrog))
-                                   (parse-error '<item2> '(gt))))
-                             (parse-error '<item2> '(frog))))
-                       (parse-error '<item2> '(slash))))
-                 (parse-error '<item2> '(lt))))
-           (parse-error '<item2> '(gt)))))
+       (let ((ast1 (parse-frog2))) (identity ast1))))
     (else
      (parse-error
        '<item2>
        '(frog paper shield treasure weapon)))))
+
+(define (parse-frog2)
+  (case (next-token)
+    ((slash)
+     (begin
+       (consume-token!)
+       (if (eq? (next-token) 'gt)
+           (begin (consume-token!) (makeFrog))
+           (parse-error '<frog2> '(gt)))))
+    ((gt)
+     (begin
+       (consume-token!)
+       (if (eq? (next-token) 'lt)
+           (begin
+             (consume-token!)
+             (if (eq? (next-token) 'slash)
+                 (begin
+                   (consume-token!)
+                   (if (eq? (next-token) 'frog)
+                       (begin
+                         (consume-token!)
+                         (if (eq? (next-token) 'gt)
+                             (begin (consume-token!) (makeFrog))
+                             (parse-error '<frog2> '(gt))))
+                       (parse-error '<frog2> '(frog))))
+                 (parse-error '<frog2> '(slash))))
+           (parse-error '<frog2> '(lt)))))
+    (else (parse-error '<frog2> '(gt slash)))))
 
 (define (parse-style)
   (case (next-token)
@@ -866,17 +878,19 @@
 
   (define debugging #t)
 
+  ;; FIXME
+
   ;; No more than this many levels.
 
-  (define max-castle-height 1)
+  (define max-castle-height 4)
 
   ;; No more than this many rooms from east to west.
 
-  (define max-castle-width 10)
+  (define max-castle-width 20)
 
   ;; No more than this many rooms from north to south.
 
-  (define max-castle-depth 10)
+  (define max-castle-depth 20)
 
   ;; Given two arguments:
   ;;   a non-empty vector of procedures that take a random
@@ -897,11 +911,16 @@
   ;; replace the calls to (current-seconds) with
   ;; some specific integer.
 
-  (define rng-range (mod (current-seconds) 9999999))
+  (define rng-range (+ 1 (mod (current-seconds) 9999999)))
   (define rng-offset (mod (current-seconds) 1000000))
 
   (define (the-usual-random-number-generator)
     (+ (random rng-range) rng-offset))
+
+  ;; FIXME: for debugging
+
+;  (define ignored
+;    (write (list rng-range rng-offset)))
 
   )
 
@@ -1065,8 +1084,10 @@
           shield-style shield-value shield-value-set!
           make-weapon weapon?
           weapon-style weapon-value weapon-value-set!
-          for-each-item)
+          for-each-item
+          find-item)
   (import (rnrs base)
+          (rnrs lists)
           (err5rs records syntactic))
 
   (define-record-type item #f item? (location))
@@ -1115,6 +1136,52 @@
 
   (define (for-each-item f)
     (for-each f all-items))
+
+  ;; Given the SXML-style specification for an item,
+  ;; and an actual item, returns true iff the item
+  ;; matches the specification.
+  ;;
+  ;; FIXME: the low-level car and cdr operations are bad here.
+
+  (define (describes-item? spec item)
+    (define (spec-kind spec) (car spec))
+    (define (spec-text spec) (cadr spec))
+    (define (spec-style spec) (cadr (cadr (cadr spec))))
+    (define (spec-value spec) (caddr spec))
+    (and (eq? (car spec) (item-kind item))
+         (case (car spec)
+          ((frog)
+           #t)
+          ((paper)
+           (string=? (spec-text spec) (paper-text item)))
+          ((treasure)
+           (and (string=? (spec-style spec)
+                          (treasure-style item))
+                (= (spec-value spec) (treasure-value item))))
+          ((shield)
+           (and (string=? (spec-style spec)
+                          (shield-style item))
+                (= (spec-value spec) (shield-value item))))
+          ((weapon)
+           (and (string=? (spec-style spec)
+                          (weapon-style item))
+                (= (spec-value spec) (weapon-value item))))
+          (else
+           (assertion-violation 'describes-item?
+                                "weird spec"
+                                spec)))))
+
+  ;; Given the SXML-style specification for an item,
+  ;; and a list of actual items, returns the first
+  ;; item in the list that matches the specification,
+  ;; or returns #f if none do.
+
+  (define (find-item spec items)
+    (let ((x (filter (lambda (item) (describes-item? spec item))
+                     items)))
+      (if (null? x)
+          #f
+          (car x))))
 
   ;; List of all items that have been created.
 
@@ -1275,6 +1342,158 @@
 
   )
 
+(library (local character-generators)
+  (export make-random-character
+          choose-random-peon-description)
+  (import (rnrs)
+          (local choose-randomly)
+          (local characters)
+          (local locations))
+
+  ;; Given a room (as a location) and a random number generator,
+  ;; generates a random character and places him/her/it within the
+  ;; room.
+
+  (define (make-random-character loc rng)
+    (let ((c ((choose-randomly character-generators rng) loc)))
+      (location-characters-set! loc (cons c (location-characters loc)))
+      c))
+
+  (define peon-descriptions
+    (vector "undistinguished"
+            "unimportant"
+            "unworthy"
+            "inconsequential"
+            "insignificant"
+            "commonplace"
+            "ordinary"
+            "unexceptional"
+            "unremarkable"
+            "average"))
+
+  (define character-generators
+    (let ((resident
+           (lambda (species description)
+             (lambda (rng)
+               (lambda (loc)
+                 (make-character species description loc))))))
+      (list->vector
+       (append (list
+                (resident 'prince "Humperdinck")
+                (resident 'princess "Buttercup")
+                (resident 'princess "Leah")
+                (resident 'soldier "infantryman")
+                (resident 'soldier "sailor")
+                (resident 'soldier "khaki")
+                (resident 'soldier "camouflage")
+                (resident 'soldier "officer")
+                (resident 'minion "lawyer")
+                (resident 'minion "accountant")
+                (resident 'minion "butler")
+                (resident 'minion "cook")
+                (resident 'minion "maid"))
+               (map (lambda (desc) (resident 'peon desc))
+                    (vector->list peon-descriptions))))))
+
+  (define (choose-random-peon-description rng)
+    (vector-ref peon-descriptions
+                (mod (rng) (vector-length peon-descriptions))))
+
+  )
+
+(library (local item-generators)
+  (export make-random-paper
+          make-random-treasure
+          make-random-shield
+          make-random-weapon)
+  (import (rnrs)
+          (local choose-randomly)
+          (local items)
+          (local locations))
+
+  ;; Given a room (as a location) and a random number generator,
+  ;; generates a random piece of paper and places it within the
+  ;; room.
+
+  (define (make-random-paper loc rng)
+    (let ((item (make-paper loc (choose-randomly text-generators rng))))
+      (location-items-set! loc (cons item (location-items loc)))))
+
+  ;; Given a room (as a location) and a random number generator,
+  ;; generates a random treasure and places it within the room.
+
+  (define (make-random-treasure loc rng)
+    (let ((item (apply make-treasure
+                       loc
+                       (choose-randomly treasure-generators rng))))
+      (location-items-set! loc (cons item (location-items loc)))))
+
+  ;; Given a room (as a location) and a random number generator,
+  ;; generates a random shield and places it within the room.
+
+  (define (make-random-shield loc rng)
+    (let ((item (apply make-shield
+                       loc
+                       (choose-randomly shield-generators rng))))
+      (location-items-set! loc (cons item (location-items loc)))))
+
+  ;; Given a room (as a location) and a random number generator,
+  ;; generates a random weapon and places it within the room.
+
+  (define (make-random-weapon loc rng)
+    (let ((item (apply make-weapon
+                       loc
+                       (choose-randomly weapon-generators rng))))
+      (location-items-set! loc (cons item (location-items loc)))))
+
+  ;; Generators of random texts, treasures, shields, weapons.
+
+  (define text-generators
+    (let ((text-generator
+           (lambda (text)
+             (lambda (rng) text))))
+      (vector (text-generator "Xanadu did Kubla Khan")
+              (text-generator "age of Aquarius")
+              (text-generator "cell phone ring tone"))))
+
+  (define treasure-generators
+    (let ((treasure-generator
+           (lambda (style nominal variation)
+             (lambda (rng)
+               (list style (+ nominal (mod (rng) (+ 1 variation))))))))
+      (vector (treasure-generator "coin" 1 10)
+              (treasure-generator "jewel" 5 20)
+              (treasure-generator "gold" 5 10)
+              (treasure-generator "art" 1 20)
+              (treasure-generator "virtue" 1 25))))
+
+  (define shield-generators
+    (let ((shield-generator
+           (lambda (style nominal variation)
+             (lambda (rng)
+               (list style (+ nominal (mod (rng) (+ 1 variation))))))))
+      (vector (shield-generator "Trojan" 2 2)
+              (shield-generator "Roman" 2 2)
+              (shield-generator "buckler" 1 0))))
+
+  (define weapon-generators
+    (let ((weapon-generator
+           (lambda (style nominal variation)
+             (lambda (rng)
+               (list style (+ nominal (mod (rng) (+ 1 variation))))))))
+      (vector (weapon-generator "rock" 1 1)
+              (weapon-generator "dart" 1 3)
+              (weapon-generator "knife" 2 6)
+              (weapon-generator "sword" 4 6)
+              (weapon-generator "spear" 4 4)
+              (weapon-generator "revolver" 4 4)
+              (weapon-generator "pistol" 4 4)
+              (weapon-generator "shotgun" 6 4)
+              (weapon-generator "grenade" 10 4)
+              (weapon-generator "rocket launcher" 10 20)
+              (weapon-generator "hi there" 1000 3000))))
+
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -1311,10 +1530,12 @@
           choose-entry-room)
   (import (rnrs)
           (local choose-randomly)
+          (local characters)
+          (local items)
           (local locations)
           (local location-generators)
-          (local characters)
-          (local items))
+          (local character-generators)
+          (local item-generators))
 
   (define the-rng the-usual-random-number-generator)
 
@@ -1516,23 +1737,44 @@
                               (cdr description))))))
            (hashtable-set! ht (canonical-description r) r))))))
 
+  ;; Returns true iff flipping an n-sided coin comes up heads.
+
+  (define (flip n)
+    (zero? (mod (the-rng) n)))
+
   ;; Create and place characters.
-  ;; FIXME:  Just the player for now.
 
   (define ignored5
-    (let* ((room (choose-reachable-room))
-           (occupants (location-characters room))
-           (player (make-player 'peon
-                                "looks like Tom Cruise"
-                                room
-                                'player
-                                (current-input-port)
-                                (current-output-port))))
-      (character-location-set! player room)
-      (location-characters-set! room (cons player occupants))))
+    (let ()
 
-  ;; Create and place items
-  ;; FIXME:  Just the frog for now.
+      (define (place! character room)
+        (character-location-set! character room)
+        (let ((occupants (location-characters room)))
+          (location-characters-set! room (cons character occupants))))
+
+      (let* ((room (choose-reachable-room))
+             (player (make-player 'peon
+                                  (choose-random-peon-description the-rng)
+                                  room
+                                  'player
+                                  (current-input-port)
+                                  (current-output-port))))
+        (place! player room))
+
+      (let* ((room (choose-reachable-room))
+             (character (make-character 'prince "charming" room)))
+        (place! character room))
+
+      (let* ((room (choose-reachable-room))
+             (character (make-character 'dragon "puff" room)))
+        (place! character room))
+
+      (for-each-room (lambda (i j k room)
+                       (if (flip 10)
+                           (let* ((c (make-random-character room the-rng)))
+                             (place! c room)))))))
+
+  ;; Create and place items.
 
   ;; The one and only enchanted frog.
 
@@ -1542,6 +1784,14 @@
            (frog (make-frog room)))
       (location-items-set! room (cons frog items))
       frog))
+
+  (define ignored6
+    (let ()
+      (for-each-room (lambda (i j k room)
+                       (if (flip 5) (make-random-paper room the-rng))
+                       (if (flip 10) (make-random-treasure room the-rng))
+                       (if (flip 20) (make-random-shield room the-rng))
+                       (if (flip 10) (make-random-weapon room the-rng))))))
 
   (define all-rooms
     (let ((all-rooms '()))
@@ -1658,20 +1908,26 @@
          ((treasure)
           (write-line (string-append "    <treasure style=\""
                                      (treasure-style (cadr element))
-                                     "\""))
-          (write-line (number->string (treasure-value (cadr element))))
+                                     "\">"))
+          (write-line (string-append "      "
+                                     (number->string
+                                      (treasure-value (cadr element)))))
           (write-line "    </treasure>"))
          ((shield)
           (write-line (string-append "    <shield style=\""
                                      (shield-style (cadr element))
-                                     "\""))
-          (write-line (number->string (shield-value (cadr element))))
+                                     "\">"))
+          (write-line (string-append "      "
+                                     (number->string
+                                      (shield-value (cadr element)))))
           (write-line "    </shield>"))
          ((weapon)
           (write-line (string-append "    <weapon style=\""
                                      (weapon-style (cadr element))
-                                     "\""))
-          (write-line (number->string (weapon-value (cadr element))))
+                                     "\">"))
+          (write-line (string-append "      "
+                                     (number->string
+                                      (weapon-value (cadr element)))))
           (write-line "    </weapon>"))
          (else
           (assertion-violation 'write-room-xml "weird item" element)))
@@ -1756,6 +2012,7 @@
 (library (local game7)
   (export game7)
   (import (rnrs)
+          (local choose-randomly)
           (local parse-xml-message)
           (local locations)
           (local characters)
@@ -1764,9 +2021,29 @@
           (local xml out)
           (local xml in))
 
+  (define the-rng the-usual-random-number-generator)
+
   ;; Number of moves so far.
 
   (define moves -1)
+
+  ;; One less than the minimum health of a live character.
+
+  (define dead -11)
+
+  ;; Moves the character from src to dst.
+
+  (define (move! character src dst)
+    (if (not (eqv? src dst))
+        (let* ((occupants-src (location-characters src))
+               (occupants-src (remv character occupants-src))
+               (occupants-dst (location-characters dst))
+               (occupants-dst (cons character occupants-dst)))
+          (location-characters-set! src occupants-src)
+          (location-characters-set! dst occupants-dst)
+          (character-location-set! character dst))))
+
+  ;; The game itself.
 
   (define (game7)
 
@@ -1776,7 +2053,13 @@
 
       (for-each-character
        (lambda (player)
+         (assert (memv player
+                       (location-characters (character-location player))))
          (case (character-status player)
+          ((generated)
+           (let ((health (character-health player)))
+             (if (< health 0)
+                 (character-health-set! player (+ 1 health)))))
           ((player)
            (set! players (+ players 1))
            (let* ((in (character-input-port player))
@@ -1786,64 +2069,148 @@
                   (held-items (character-items player))
                   (room-items (location-items the-current-room)))
 
-             (if (eqv? the-current-room the-outside)
-
-                 (let ((frog-location (item-location the-frog)))
-
-                   (if (or (eqv? frog-location the-outside)
-                           (memv the-frog held-items))
-
-                       (retire! player #t out)
-
-                       (begin (write-outside out)
-                              (let ((msg (parse-xml-message in)))
-                                (case (car msg)
-                                 ((stop)
-                                  (retire! player #f out))
-                                 ((enter)
-                                  (character-location-set!
-                                   player
-                                   (choose-entry-room)))
-                                 (else
-                                  (institutionalize! player
-                                                     (car msg)
-                                                     out)))))))
-
-                 (begin (write-room the-current-room player out)
-                        (let ((msg (parse-xml-message in)))
-                          (case (car msg)
-                           ((exit)
-                            (let* ((neighbors
-                                    (location-neighbors the-current-room))
-                                   (probe (assq (cadr msg) neighbors)))
-                              (if probe
-                                  (character-location-set! player (cdr probe))
-                                  (institutionalize! player (cadr msg) out))))
-                           ((grasp)
-                            (if (or (null? room-items)
-                                    (not (null? held-items)))
-                                (institutionalize! player 'grasp out)
-                                (let ((item (car room-items))) ;FIXME
-                                  (character-items-set! player (list item))
-                                  (location-items-set! the-current-room
-                                                       (cdr room-items))
-                                  (item-location-set! item player))))
-                           ((drop)
-                            (if (null? held-items)
-                                (institutionalize! player 'drop out)
-                                (begin
-                                 (character-items-set! player '())
-                                 (location-items-set! the-current-room
-                                                      (cons (car held-items)
-                                                            room-items))
-                                 (item-location-set! (car held-items)
-                                                     the-current-room))))
-                           ; FIXME: write and assault not implemented yet
-                           (else
-                            (institutionalize! player (car msg) out)))))))))))
+             (cond ((<= health dead)
+                    (bury! player out))
+                   ((< health 0)
+                    (character-health-set! player (+ health 1)))
+                   ((eqv? the-current-room the-outside)
+                    (let ((items (character-items player)))
+                      (character-items-set! player '())
+                      (location-items-set! the-outside
+                                           (append
+                                            items
+                                            (location-items the-outside)))
+                      (for-each (lambda (item)
+                                  (item-location-set! item the-outside))
+                                items)
+                      (if (eqv? (item-location the-frog) the-outside)
+                          (retire! player #t out)
+                          (begin (write-outside out)
+                                 (let ((msg (parse-xml-message in)))
+                                   (case (car msg)
+                                    ((stop)
+                                     (retire! player #f out))
+                                    ((enter)
+                                     (move! player
+                                            the-outside
+                                            (choose-entry-room)))
+                                    (else
+                                     (institutionalize! player
+                                                        (car msg)
+                                                        out))))))))
+                   (else
+                    (player-in-room! player))))))))
 
       (if (> players 0)
           (game7))))
+
+  ;; Handles the case of a participating player in a room.
+
+  (define (player-in-room! player)
+    (let* ((in (character-input-port player))
+           (out (character-output-port player))
+           (health (character-health player))
+           (the-current-room (character-location player))
+           (held-items (character-items player))
+           (room-items (location-items the-current-room)))
+      (write-room the-current-room player out)
+      (let ((msg (parse-xml-message in)))
+        (case (car msg)
+         ((exit)
+          (let* ((neighbors
+                  (location-neighbors the-current-room))
+                 (probe (assq (cadr msg) neighbors)))
+            (if probe
+                (move! player the-current-room (cdr probe))
+                (institutionalize! player (cadr msg) out))))
+         ((grasp)
+          (if (or (null? room-items)
+                  (not (null? held-items)))
+              (institutionalize! player 'grasp out)
+              (let ((item (find-item (cadr msg)
+                                     room-items)))
+                (if item
+                    (begin
+                     (character-items-set! player
+                                           (list item))
+                     (location-items-set! the-current-room
+                                          (remv item room-items))
+                     (item-location-set! item player))
+                    (institutionalize! player
+                                       (cadr msg)
+                                       out)))))
+         ((drop)
+          (if (null? held-items)
+              (institutionalize! player 'drop out)
+              (begin
+               (character-items-set! player '())
+               (location-items-set! the-current-room
+                                    (cons (car held-items)
+                                          room-items))
+               (item-location-set! (car held-items)
+                                   the-current-room))))
+         ((write)
+          (if (and (not (null? held-items))
+                   (eq? (item-kind (car held-items)) 'paper))
+              (paper-text-set! (car held-items) (cadr msg))
+              (institutionalize! player 'write out)))
+         ((assault)
+          (simulate-assault! the-current-room player))
+         (else
+          (institutionalize! player (car msg) out))))))
+
+  ;; Simulate an assault on the occupants of the room by the assailant.
+
+  (define (simulate-assault! room assailant)
+    (let* ((occupants (location-characters room))
+           (held-items (character-items assailant))
+           (weapon-value (if (and (not (null? held-items))
+                                  (eq? (item-kind (car held-items)) 'weapon))
+                             (weapon-value (car held-items))
+                             0))
+           (shield-value (if (and (not (null? held-items))
+                                  (eq? (item-kind (car held-items)) 'shield))
+                             (weapon-value (car held-items))
+                             0)))
+      (for-each (lambda (adversary)
+                  (if (not (eqv? adversary assailant))
+                      (let* ((items (character-items adversary))
+                             (wval (if (and (not (null? items))
+                                            (eq? (item-kind (car items))
+                                                 'weapon))
+                                       (weapon-value (car items))
+                                       0))
+                             (sval (if (and (not (null? items))
+                                            (eq? (item-kind (car items))
+                                                 'shield))
+                                       (weapon-value (car items))
+                                       0))
+                             (skill (case (character-species adversary)
+                                     ((prince princess soldier) 3)
+                                     ((dragon) 10)
+                                     (else 1)))
+                             (luck1 (- (mod (the-rng) 5) 2))
+                             (luck2 (- (mod (the-rng) 5) 2))
+                             (damage1 (max 0
+                                           (+ wval skill luck1
+                                              (- shield-value))))
+                             (damage2 (max 0
+                                           (+ weapon-value luck2
+                                              (- sval)))))
+                        (character-health-set! adversary
+                                               (- (character-health adversary)
+                                                  damage2))
+                        (character-health-set! assailant
+                                               (- (character-health assailant)
+                                                  damage1)))))
+                occupants)
+      (for-each (lambda (occupant)
+                  (if (> weapon-value 10)
+                      (character-health-set! occupant -inf.0))
+                  (if (<= (character-health occupant) dead)
+                      (begin (character-health-set! occupant -inf.0)
+                             (move! occupant room the-outside))))
+                occupants)))
 
   ;; Marks a player as retired and writes a gameover message.
 
@@ -1857,6 +2224,13 @@
     (character-status-set! player 'deranged)
     (write-gameover (make-lossage thing) out))
 
+  ;; Marks a player as dead and writes a gameover message.
+
+  (define (bury! player out)
+    (character-status-set! player 'dead)
+    (move! player (character-location player) the-outside)
+    (write-gameover (make-obituary) out))
+
   ;; Returns a congratulatory message.
 
   (define (make-congratulations . rest)
@@ -1868,7 +2242,13 @@
                      phrase
                      " in "
                      (number->string moves)
-                     " moves.")))
+                     " moves\n    with "
+                     (number->string
+                      (apply +
+                             (map treasure-value
+                                  (filter treasure?
+                                          (location-items the-outside)))))
+                     " units of treasure.")))
 
   ;; Returns an error message.
 
@@ -1878,6 +2258,13 @@
                    " moves because "
                    (symbol->string reason)
                    " doesn't make sense here."))
+
+  ;; Returns an obituary message.
+
+  (define (make-obituary)
+    (string-append "You died after "
+                   (number->string moves)
+                   " moves."))
 
   )
 
