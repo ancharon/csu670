@@ -868,15 +868,15 @@
 
   ;; No more than this many levels.
 
-  (define max-castle-height 4)
+  (define max-castle-height 1)
 
   ;; No more than this many rooms from east to west.
 
-  (define max-castle-width 20)
+  (define max-castle-width 10)
 
   ;; No more than this many rooms from north to south.
 
-  (define max-castle-depth 20)
+  (define max-castle-depth 10)
 
   ;; Given two arguments:
   ;;   a non-empty vector of procedures that take a random

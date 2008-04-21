@@ -12,7 +12,34 @@ import logging
 import random
 import config
 
-#TODO: implement all these classes
+class Exit(object):
+    def __init__(self, dir):
+        self.direction = dir
+        
+    def __eq__(self, other):
+        if isinstance(other, Exit):
+            return self.direction == other.direction
+        return NotImplemented
+        
+class Enter(object):
+    pass
+    
+class Stop(object):
+    pass
+    
+class Grasp(object):
+    def __init__(self, item):
+        self.item = item
+        
+class Drop(object):
+    pass
+    
+class Write(object):
+    def __init__(self, text):
+        self.text = text
+        
+class Assault(object):
+    pass
 
 #Any characteristics common to all Items should be implemented in the Item
 # class. Not sure if this is necessary or useful.
@@ -26,9 +53,6 @@ class Item(object):
     
 class Frog(Item):
     def __init__(self):
-        pass
-        
-    def initialize(self, xmlElement):
         '''The frog has no properties'''
         pass
         
@@ -39,15 +63,12 @@ class Frog(Item):
         return "<frog></frog>"
     
 class Paper(Item):
-    def __init__(self):
-        self.text = ""
-        
-    def initialize(self, xmlElement):
+    def __init__(self, xmlElement):
         properties = xmlElement.getElements()
         for prop in properties:
             if prop == "text":
                 self.text = prop.cdata.strip()
-                
+          
     def write(self, text):
         #TODO: deal with sending the write message to the referee
         self.text = text
@@ -62,14 +83,10 @@ class Paper(Item):
 # value of the "style" attribute, it is accessed by using something like this:
 # theStyle = xmlElement.getAttribute('style')
 class Treasure(Item):
-    def __init__(self):
-        self.style = ""
-        self.value = 0
-        
-    def initialize(self, xmlElement):
+    def __init__(self, xmlElement):
         self.style = xmlElement.getAttribute("style").strip()
         self.value = int(xmlElement.getData().strip())
-        
+ 
     def toString(self):
         return "Treasure: " + self.style + ",worth " + str(self.value)
         
@@ -77,14 +94,10 @@ class Treasure(Item):
         return '<treasure style="' + self.style + '">' + str(self.value) + '</treasure>'
     
 class Shield(Item):
-    def __init__(self):
-        self.style = ""
-        self.defense = 0
-        
-    def initialize(self, xmlElement):
+    def __init__(self, xmlElement):
         self.style = xmlElement.getAttribute("style").strip()
         self.defense = int(xmlElement.getData().strip())
-        
+
     def toString(self):
         return "Shield: " + self.style + ",defense +" + str(self.defense)
         
@@ -92,14 +105,10 @@ class Shield(Item):
         return '<shield style="'+self.style+'">'+str(self.defense)+'</shield>'
     
 class Weapon(Item):
-    def __init__(self):
-        self.style = ""
-        self.offense = 0
-        
-    def initialize(self, xmlElement):
+    def __init__(self, xmlElement):
         self.style = xmlElement.getAttribute("style").strip()
         self.offense = int(xmlElement.getData().strip())
-    
+
     def toString(self):
         return "Weapon: " + self.style + ",offense +" + str(self.offense)
         
@@ -108,18 +117,14 @@ class Weapon(Item):
     
 class Character(object):
     '''A character in the castle. Parsed from input.'''
-    def __init__(self):
-        self.species = ""
-        self.description = ""
-        
-    def initialize(self, xmlElement):
+    def __init__(self, xmlElement):
         properties = xmlElement.getElements()
         for prop in properties:
             if prop == "species":
                 self.species = prop.cdata.strip()
             elif prop == "description":
                 self.description = prop.cdata.strip()
-        
+ 
     def toString(self):
         return "Character: " + self.species + ", " + self.description
     
@@ -132,6 +137,9 @@ class Outside(object):
         
     def toString(self):
         pass
+        
+    def isEqual(self, outside):
+        return self == outside
 
 class Room(object):
     '''A single room in a castle. Parsed from input.'''
@@ -155,6 +163,8 @@ class Room(object):
         self.items = set()
         #The last known set of characters we saw in the room
         self.characters = set()
+        #Set to True if this room has an exit to the outside
+        self.hasOutsideExit = False
         return
         
     def initialize(self, xmlElement):
@@ -169,9 +179,20 @@ class Room(object):
             elif prop.name == "exits":
                 exitList = prop.getElements()
                 for exit in exitList:
-                    self.addExit(exit.cdata.strip())
+                    self.addExit(Exit(exit.cdata.strip()))
+            elif prop.name == "item":
+                self.addItem(prop.getElements()[0])
+            elif prop.name == "character":
+                self.addCharacter(prop)
     
     # ------------------------- Getters and setters -------------------------
+        
+    def setHasOutsideExit(self, val):
+        self.hasOutsideExit = val
+        return
+    
+    def getHasOutsideExit(self):
+        return self.hasOutsideExit
         
     #FIXME: This method should probably not exist. We don't want people changing
     # this stuff after it's been parsed.
@@ -190,11 +211,45 @@ class Room(object):
         
     def getCharacteristics(self):
         return self.characteristics
+    
+    def addItem(self, element):
+        if element.name == "frog":
+            self.items.add(Frog())
+        elif element.name == "paper":
+            self.items.add(Paper(element))
+        elif element.name == "treasure":
+            self.items.add(Treasure(element))
+        elif element.name == "shield":
+            self.items.add(Shield(element))
+        elif element.name == "weapon":
+            self.items.add(Weapon(element))
+        else:
+            logging.error("Got an unknown item type: " + element.name)
+            raise ItemTypeError, "Got an unknown item type: " + element.name
+    
+    def getItems(self):
+        return self.items
+    
+    def removeItem(self, item):
+        '''Attempts to remove an item from this room's list of items.
+        May throw a ValueError if the item doesn't exist in the list.'''
+        self.items.remove(item)
+        
+    def addCharacter(self, element):
+        self.characters.add(Character(element))
+    
+    def getCharacters(self):
+        return self.characters
+    
+    def removeCharacter(self, character):
+        '''Attempts to remove a character from this room's list of characters.
+        May throw a ValueError if the character doesn't exist in the list.'''
+        self.characters.remove(character)
        
     #FIXME: This method should probably not exist. We don't want people changing
     # this stuff after it's been parsed.
     def addExit(self, exit):
-        self.exits.add(unicode(exit))
+        self.exits.add(exit)
         return
 
     def getExits(self):
@@ -215,9 +270,9 @@ class Room(object):
             edgeList.append(self.edges[edge])
         return edgeList
         
-    def getEdge(self, direction):
+    def getEdge(self, exit):
         #FIXME: Should be deprecated; see notes in Edge class
-        return self.edges[direction]
+        return self.edges[exit.direction]
         
     def isVisited(self):
         return self.visited
@@ -248,11 +303,10 @@ class Room(object):
         
     def isEqual(self, otherRoom):
         '''Rooms are considered equal if they have the same purpose and characteristics'''
-        if self is None or otherRoom is None:
+        if self is None or otherRoom is None or isinstance(otherRoom, Outside):
             return False
         if (self.purpose  == otherRoom.purpose) and \
-           (self.characteristics == otherRoom.characteristics) and \
-           (self.exits == otherRoom.exits):
+           (self.characteristics == otherRoom.characteristics):
             return True
         else:
             return False
@@ -270,6 +324,13 @@ class Room(object):
             for exit in self.getExits():
                 returnString += exit + os.linesep
         return returnString
+        
+    # ------------------------- Exceptions -------------------------
+    class ItemTypeError(Exception):
+       def __init__(self,value):
+           self.parameter=value
+       def __str__(self):
+           return unicode(self.parameter)
         
 class Gameover(object):
     '''A game over message. Parsed from input.'''
@@ -314,10 +375,10 @@ class Edge(object):
     
     # ------------------------- Initialization -------------------------
     
-    def __init__(self, direction, (room1, room2)):
-        '''Constructor for the Edge class - "An edge means that to get from [room1] to [room2], you go [direction]"'''
+    def __init__(self, exit, (room1, room2)):
+        '''Constructor for the Edge class - "An edge means that to get from [room1] to [room2], you go [exit]"'''
         #NOTE: This is an actual data structure made by us, not parsed from XML, so there's no need for a separate initialization call.
-        self.direction = direction
+        self.exit = exit
         self.rooms = (room1, room2)
         self.weight = 1 #unweighted graph
         
@@ -333,28 +394,28 @@ class Edge(object):
         return self.rooms[1]
        
     def getDirection(self):
-        return self.direction
+        return self.exit.direction
         
     def setRooms(self, (room1, room2)):
         self.rooms = (room1, room2)
         
-    def setDirection(self):
-        self.direction = direction
+    def setDirection(self, exit):
+        self.exit = exit
     
     # ------------------------- More interesting stuff -------------------------
     
     def isExplored(self):
         '''Returns True iff room2 - the "to" room - is not null, meaning it has been visited before'''
-        #This looks retarded, but it works, honest. If rooms[1] is None, then we haven't been there (duh), and None = False in Python.
-        return self.rooms[1]
+        #This looks retarded, but it works, honest. If edge.getDestination() is None, then we haven't been there (duh), and None = False in Python.
+        return self.getDestination()
     
     def isEqual(self, edge):
         '''Determines if a given edge is the same as this one. See comments for explicit specification.'''
         #Two edges are equal if:
-        # 1. Their directions are the same
+        # 1. Their exits are the same
         # 2. Edge1.room1 = Edge2.room1
         # 3. Edge2.room2 = Edge2.room2
-        if self.direction == edge.direction:
+        if self.exit.direction == edge.exit.direction:
             myRooms = self.getRooms()
             yourRooms = edge.getRooms()
             if  myRooms[0].isEqual(yourRooms[0]) and \
@@ -367,7 +428,7 @@ class Edge(object):
         toReturn = ""
         toReturn += "Edge from "
         toReturn += unicode(self.rooms[0]) + " to " + unicode(self.rooms[1])
-        toReturn += " going " + self.direction
+        toReturn += " going " + self.exit
         return toReturn
 
 
@@ -384,14 +445,14 @@ class Graph(object):
     
     # ------------------------- Getters and setters -------------------------
         
-    def addEdge(self, direction, (room1, room2)):
+    def addEdge(self, exit, (room1, room2)):
         '''Adds an Edge to this Graph, provided it doesn't already exist. Note: will override null Edges with non-null.'''
         #If there is already an edge going in this direction from room 1 to a non-null room,
         # then don't add anything. Otherwise, add this new edge.
-        newEdge = Edge(direction, (room1, room2))
+        newEdge = Edge(exit, (room1, room2))
         if room2 is not None:
             #There is an edge here already. Check if it's equal to the new one.
-            oldEdge = room1.getEdge(direction)
+            oldEdge = room1.getEdge(exit)
             if newEdge.isEqual(oldEdge):
                 #They're the same, do nothing.
                 return
@@ -410,7 +471,7 @@ class Graph(object):
         self.edges.remove(edge)
         room.removeEdge(edge)
         
-                    
+    #addRooms should be able to handle rooms as well as outsides
     def addRoom(self, room):
         '''Adds a new Room to this Graph and sets all its exits to null'''
         for myRoom in self.rooms:
@@ -419,10 +480,11 @@ class Graph(object):
         self.rooms.add(room)
         #New rooms are populated with edges going to null. It is the
         #responsibility of the GamePlayer class to update them later.
-        for exit in room.getExits():
-            self.addEdge(exit, (room, None))
-        #Mark the room as visited
-        room.visit()
+        if not isinstance(room, Outside):
+            for exit in room.getExits():
+                self.addEdge(exit, (room, None))
+            #Mark the room as visited
+            room.visit()
         
     # ------------------------- More interesting stuff -------------------------
     
