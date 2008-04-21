@@ -84,13 +84,7 @@ class Xml2Obj(sax.ContentHandler):
         #TODO: find a better place for the typeMappings dictionary
         typeMappings = {"room":     graph.Room,
                         "gameover": graph.Gameover,
-                        "outside":  graph.Outside,
-                        "frog":     graph.Frog,
-                        "paper":    graph.Paper,
-                        "treasure": graph.Treasure,
-                        "shield":   graph.Shield,
-                        "weapon":   graph.Weapon,
-                        "character":graph.Character
+                        "outside":  graph.Outside
                         }
         if name in typeMappings:
             element = Element(name, attributes, typeMappings[name])
